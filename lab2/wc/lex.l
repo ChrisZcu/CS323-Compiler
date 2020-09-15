@@ -10,6 +10,7 @@
 %}
 letter [a-zA-Z]
 %%
+
 {letter}+ { words++; chars+=strlen(yytext); }
 \n { chars++; lines++; }
 . { chars++; }
