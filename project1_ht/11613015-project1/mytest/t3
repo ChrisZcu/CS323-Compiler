@@ -1,0 +1,12 @@
+int test_1()
+{
+    int a = 1;
+    int b = 3
+    int c;
+    if (a == 1) 
+        if(b == 2)
+            c = 0;
+        else
+            c = 1;
+
+}
