@@ -1,0 +1,4 @@
+int t3(){
+    char str = 'test'; 
+    return 0;
+}

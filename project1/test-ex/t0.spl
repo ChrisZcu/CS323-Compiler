@@ -1,0 +1,8 @@
+int func_1(int a)
+{
+    float y = 1.001;
+//  float x = xsd;
+    float x = 1.001e5;
+  return 3 * a;
+
+}

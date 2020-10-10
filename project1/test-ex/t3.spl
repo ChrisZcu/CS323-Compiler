@@ -1,0 +1,6 @@
+int t3(){
+    int a = 0x9;
+    int b = 0xt; 
+
+    return 0;
+}

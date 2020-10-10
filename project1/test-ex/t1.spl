@@ -1,0 +1,9 @@
+int t1(int a){
+
+    /*
+    *ada
+    */
+    int y;
+    
+    return 0;
+}
