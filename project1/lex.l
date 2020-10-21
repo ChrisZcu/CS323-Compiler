@@ -16,15 +16,15 @@
         yycolumn += yyleng;
 %}
 %option yylineno 
-HEX_INT [-+]?0[xX]([0-9a-fA-F]{0,8})
 OCT_INT [-+]?0([0-3]?[0-7]{0,10})
+HEX_INT [-+]?0[xX]([0-9a-fA-F]{0,8})
 DEC_INT [-+]?0|([1-9][0-9]*)
-HEX_INT_WRONG [-+]?0[xX][0-9a-zA-Z]*
 OCT_INT_WRONG [-+]?0[a-wy-z][0-9a-zA-Z]*
+HEX_INT_WRONG [-+]?0[xX][0-9a-zA-Z]*
 INT {HEX_INT}|{OCT_INT}|{DEC_INT}
 INT_WRONG {HEX_INT_WRONG}|{OCT_INT_WRONG}
-HEX_FLOAT {HEX_INT}\.[0-9a-f]*
 OCT_FLOAT {OCT_INT}\.[0-7]*
+HEX_FLOAT {HEX_INT}\.[0-9a-f]*
 DEC_FLOAT {DEC_INT}\.[0-9]*(e[-+]?[0-9]*)?
 FLOAT {HEX_FLOAT}|{OCT_FLOAT}|{DEC_FLOAT}
 CHAR ('[a-zA-Z0-9]')|('\\x[0-9a-fA-F]{2}')
@@ -55,10 +55,6 @@ RB \]
 LC \{
 RC \}
 %%
-{FLOAT} { 
-    yylval.ast = new_node("FLOAT", strdup(yytext), yylineno);
-    return FLOAT;
-}
 {INT} {
     yylval.ast = new_node("INT", strdup(yytext), yylineno);
     return INT;
@@ -68,6 +64,10 @@ RC \}
     yylineno, yytext);
     has_lexical_error = 1;
     has_error = 1;
+}
+{FLOAT} { 
+    yylval.ast = new_node("FLOAT", strdup(yytext), yylineno);
+    return FLOAT;
 }
 {CHAR} {
     yylval.ast = new_node("CHAR", strdup(yytext), yylineno);

@@ -1,0 +1,6 @@
+int t1(){
+    int b = 1;
+    int c = 'qw';
+
+    return 0;
+}

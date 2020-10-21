@@ -1,0 +1,6 @@
+int t4(){
+
+    wront_type a = 's'
+
+    return 1;
+}

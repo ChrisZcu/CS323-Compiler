@@ -1,0 +1,6 @@
+int t2()
+{
+    int b = 1
+    char c = 'q';
+    return 0;
+}
