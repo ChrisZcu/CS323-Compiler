@@ -143,7 +143,7 @@ Stmt: Exp SEMI {
     }
     ;
 
-DefList: Def DefList {
+DefList: Def DefList {//TODO variable defination
        $$ = new_ast("DefList", 2, $1, $2);
     }
     | %empty {
@@ -158,7 +158,7 @@ Def: Specifier DecList SEMI {
 
 DecList: Dec {
         $$ = new_ast("DecList", 1, $1);
-    }
+    } 
     | Dec COMMA DecList {
         $$ = new_ast("DecList", 3, $1, $2, $3);
     }
@@ -186,7 +186,7 @@ Exp: Exp ASSIGN Exp {$$ = new_ast("Exp", 3, $1, $2, $3);}
     | Exp MUL Exp {$$ = new_ast("Exp", 3, $1, $2, $3);}
     | Exp DIV Exp {$$ = new_ast("Exp", 3, $1, $2, $3);}
     | LP Exp RP {$$ = new_ast("Exp", 3, $1, $2, $3);}
-    | MINUS Exp {$$ = new_ast("Exp", 2, $1);}
+    | MINUS Exp {$$ = new_ast("Exp", 2, $1, $2);}
     | NOT Exp {$$ = new_ast("Exp", 2, $1, $2);}
     | ID LP Args RP {$$ = new_ast("Exp", 4, $1, $2, $3, $4);}
     | ID LP RP {$$ = new_ast("Exp", 3, $1, $2, $3);}

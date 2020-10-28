@@ -18,6 +18,15 @@
 #include "symtab_ll_function.c"
 #endif
 
+enum EXP_TYPE
+{
+    INT = 0,
+    FLOAT = 1,
+    STRUCT = 2,
+    ARRAY = 3,
+    BOOL = 4
+} exp_type;
+
 struct ast
 {
     char *name;
@@ -126,11 +135,83 @@ void parsetree(struct ast *ast, int level)
     }
 }
 
-int semantic(struct ast * ast, int level)
+int semantic(struct ast *ast, int level)
 {
     symtab_variable *symtab_variable = variable_symtab_init();
     symtab_function *symtab_function = function_symtab_init();
     parsetree(ast, level);
-
     return 0;
 }
+
+int get_type(char *name)
+{
+    if (!strcmp(name, "INT"))
+    {
+        return 0;
+    }
+    else if (!strcmp(name, "FLOAT"))
+    {
+        return 1;
+    }
+    else if (!strcmp(name, "STRUCT"))
+    {
+        return 2;
+    }
+}
+
+int check_exp_type(struct ast *exp) // check exp
+{
+    struct ast *child_layer = exp->next_layer;
+    struct ast *neighbor = child_layer->next_neighbor;
+
+    if (neighbor == NULL) //return type
+    {
+        return get_type(child_layer->name);
+    }
+    else
+    {
+        if (!strcmp(neighbor->name, "ASSIGN"))
+        { //TODO check define, error 1
+        }
+        else if (!strcmp(neighbor->name, "PLUS") ||
+                 !strcmp(neighbor->name, "MINUS") ||
+                 !strcmp(neighbor->name, "MUL") ||
+                 !strcmp(neighbor->name, "DIV"))
+        {
+            //check type, error 7
+        }
+        //bool
+        else if (!strcmp(neighbor->name, "AND") ||
+                 !strcmp(neighbor->name, "OR") ||
+                 !strcmp(neighbor->name, "LT") ||
+                 !strcmp(neighbor->name, "LE") ||
+                 !strcmp(neighbor->name, "GT") ||
+                 !strcmp(neighbor->name, "GE") ||
+                 !strcmp(neighbor->name, "NE") ||
+                 !strcmp(neighbor->name, "EQ"))
+        {
+        }
+    }
+    if (!strcmp(child_layer->name, "MINUS"))
+    {
+        return get_type(neighbor->name);
+    }
+    else if (!strcmp(child_layer->name, "NOT"))
+    {
+        //check bool
+        return 3;
+    }
+    else if (!strcmp(child_layer->name, "ID"))
+    { //function check, error 2
+    }
+    else if (!strcmp(neighbor->name, "LB"))
+    {
+        //check array, error 10, 12
+    }
+    else if (!strcmp(neighbor->name, "DOT"))
+    {
+        //check struct, error 13, 14, 15
+    }
+
+    return -1;
+};

@@ -62,40 +62,68 @@ Program (1)
                         INT: 1
                       RB
                 SEMI
-        StmtList (6)
-          Stmt (6)
-            RETURN
-            Exp (6)
-              INT: 0
+              DefList (6)
+                Def (6)
+                  Specifier (6)
+                    TYPE: int
+                  DecList (6)
+                    Dec (6)
+                      VarDec (6)
+                        ID: a
+                  SEMI
+        StmtList (7)
+          Stmt (7)
+            Exp (7)
+              Exp (7)
+                ID: a
+              ASSIGN
+              Exp (7)
+                INT: 1
             SEMI
+          StmtList (8)
+            Stmt (8)
+              Exp (8)
+                Exp (8)
+                  ID: a
+                ASSIGN
+                Exp (8)
+                  MINUS
+                  SEMI
+              SEMI
+            StmtList (9)
+              Stmt (9)
+                RETURN
+                Exp (9)
+                  INT: 0
+                SEMI
         RC
-    ExtDefList (8)
-      ExtDef (8)
-        Specifier (8)
+    ExtDefList (11)
+      ExtDef (11)
+        Specifier (11)
           TYPE: float
-        FunDec (8)
+        FunDec (11)
           ID: funt_2
           LP
-          VarList (8)
-            ParamDec (8)
-              Specifier (8)
+          VarList (11)
+            ParamDec (11)
+              Specifier (11)
                 TYPE: int
-              VarDec (8)
+              VarDec (11)
                 ID: a
             COMMA
-            VarList (8)
-              ParamDec (8)
-                Specifier (8)
+            VarList (11)
+              ParamDec (11)
+                Specifier (11)
                   TYPE: int
-                VarDec (8)
+                VarDec (11)
                   ID: b
           RP
-        CompSt (8)
+        CompSt (11)
           LC
-          StmtList (9)
-            Stmt (9)
+          StmtList (12)
+            Stmt (12)
               RETURN
-              Exp (9)
+              Exp (12)
                 FLOAT: 1.0
               SEMI
           RC
