@@ -93,7 +93,7 @@ VarDec: ID {
     }
     ;
 
-FunDec: ID LP VarList RP {
+FunDec: ID LP VarList RP {//function define
         $$ = new_ast("FunDec", 4, $1, $2, $3, $4);
     }
     | ID LP RP {
@@ -112,7 +112,7 @@ ParamDec: Specifier VarDec {
     }
     ;
 
-CompSt: LC DefList StmtList RC {
+CompSt: LC DefList StmtList RC { // variable scope
         $$ = new_ast("CompSt", 4, $1, $2, $3, $4);
     }
     ;
@@ -123,7 +123,7 @@ StmtList: Stmt StmtList {
         $$ = new_ast(NULL, 0);
     }
     ;
-Stmt: Exp SEMI {
+Stmt: Exp SEMI { //if else 
         $$ = new_ast("Stmt", 2, $1, $2);
     }
     | CompSt {
@@ -151,7 +151,7 @@ DefList: Def DefList {//TODO variable defination
     }
     ;
 
-Def: Specifier DecList SEMI {
+Def: Specifier DecList SEMI { //TODO variable definition, error 3
         $$ = new_ast("Def", 3, $1, $2, $3);
     }
     ;
