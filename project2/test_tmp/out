@@ -108,8 +108,7 @@ Program (1)
                   ID: a
                 ASSIGN
                 Exp (9)
-                  MINUS
-                  SEMI
+                  CHAR: 's'
               SEMI
             StmtList (10)
               Stmt (10)
@@ -165,3 +164,12 @@ Program (1)
                 FLOAT: 1.0
               SEMI
           RC
+      ExtDefList (18)
+        ExtDef (18)
+          Specifier (18)
+            StructSpecifier (18)
+              STRUCT
+              ID: a
+              LC
+              RC
+          SEMI

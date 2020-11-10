@@ -6,7 +6,7 @@ int func_1(int a)
   int a; int b=1;
   int a;
   a=1;
-  a=-1;
+  a="asd";
   {
     int d = 1;
   }
@@ -15,3 +15,6 @@ int func_1(int a)
 float funt_2(int a, int b){
   return 1.0;
 }
+struct a{
+
+};

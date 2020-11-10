@@ -1,0 +1,11 @@
+ExtDefList (4)
+  ExtDef (4)
+    Specifier (4)
+      TYPE: int
+    FunDec (4)
+      ID: func3
+      LP
+      RP
+    CompSt (4)
+      LC
+      RC

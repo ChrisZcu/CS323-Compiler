@@ -1,0 +1,1 @@
+make && ./bin/splc < test_tmp/test_parse_tree > test_tmp/out_test 

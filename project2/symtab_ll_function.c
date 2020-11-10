@@ -7,7 +7,7 @@ typedef struct symtab_function
 {
     entry_function entry;
     struct symtab_function *next;
-}symtab_function;
+} symtab_function;
 
 // ************************************************************
 //    Your implementation goes here
@@ -23,6 +23,7 @@ symtab_function *function_symtab_init()
 
 int function_symtab_insert(symtab_function *self, char *key, VAL_FUNTION value)
 {
+    int i = 0;
     symtab_function *ptr = self;
     while (ptr->next != NULL)
     {
@@ -32,9 +33,10 @@ int function_symtab_insert(symtab_function *self, char *key, VAL_FUNTION value)
     }
     symtab_function *node = malloc(sizeof(symtab_function));
     memset(node, '\0', sizeof(symtab_function));
-    function_entry_init(&node->entry, key, value);
+    function_entry_init(&ptr->entry, key, value);
     node->next = NULL;
     ptr->next = node;
+
     return 1;
 }
 

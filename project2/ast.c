@@ -18,14 +18,8 @@
 #include "symtab_ll_function.c"
 #endif
 
-enum EXP_TYPE
-{
-    INT = 0,
-    FLOAT = 1,
-    STRUCT = 2,
-    ARRAY = 3,
-    BOOL = 4
-} exp_type;
+struct variable_list *variable_head = NULL;
+struct symtab_function *function_head = NULL;
 
 struct ast
 {
@@ -35,6 +29,13 @@ struct ast
 
     struct ast *next_layer;
     struct ast *next_neighbor;
+};
+
+struct variable_list
+{
+    symtab_variable *symtab_variable;
+    struct variable_list *childe;
+    struct variable_list *parent;
 };
 
 struct ast *new_ast(char *name, int num, ...)
@@ -74,9 +75,239 @@ struct ast *new_node(char *name, char *value, int lineno)
 }
 
 int check_exp_type(struct ast *ast);
-
+void scan_tree(struct ast *ast, int level);
+void variable_insert();
+void global_charge(struct ast *ast);
+void local_charge(struct ast *ast);
 //TODO check the semantic
 void parsetree(struct ast *ast, int level)
+{
+    int scope = 0;
+    if (ast != NULL)
+    {
+        if (ast->name != NULL)
+        {
+            if (ast->lineno != -1)
+            {
+                //check assign, function need return type, lack of specifier type.
+                //check operation of unsuitable operation
+
+                if (!strcmp(ast->name, "CompSt"))
+                {
+                    scope = 1;
+
+                    // add new scope
+                    variable_insert();
+                }
+                //global variable
+                if (!strcmp(ast->name, "ExtDef"))
+                {
+                    global_charge(ast);
+                }
+                //local variable
+                if (!strcmp(ast->name, "Def"))
+                {
+
+                    local_charge(ast);
+                }
+                if (!strcmp(ast->name, "Exp"))
+                {
+
+                    check_exp_type(ast);
+                }
+            }
+            if (!strcmp(ast->name, "TYPE") ||
+                !strcmp(ast->name, "ID") ||
+                !strcmp(ast->name, "INT") ||
+                !strcmp(ast->name, "FLOAT") ||
+                !strcmp(ast->name, "CHAR"))
+            {
+                // printf(": %s", ast->value);
+            }
+            if (!strcmp(ast->name, "Program") ||
+                !strcmp(ast->name, "Specifier") ||
+                !strcmp(ast->name, "ExtDef") ||
+                !strcmp(ast->name, "Dec") ||
+                !strcmp(ast->name, "StmtList") ||
+                !strcmp(ast->name, "ExtDecList") ||
+                !strcmp(ast->name, "StructSpecifier") ||
+                !strcmp(ast->name, "VarDec") || //TODO check define variable name
+                !strcmp(ast->name, "FunDec") || //TODO check define function, check return type
+                !strcmp(ast->name, "Exp") ||
+                !strcmp(ast->name, "VarList") ||
+                !strcmp(ast->name, "ParamDec") ||
+                !strcmp(ast->name, "CompSt") ||
+                !strcmp(ast->name, "ExtDefList") ||
+                !strcmp(ast->name, "Stmt") ||
+                !strcmp(ast->name, "DefList") ||
+                !strcmp(ast->name, "Def") ||
+                !strcmp(ast->name, "DecList") ||
+                !strcmp(ast->name, "Args"))
+            {
+            }
+        }
+
+        struct ast *son = ast->next_layer;
+        while (son != NULL)
+        {
+            parsetree(son, level + 1);
+            son = son->next_neighbor;
+        }
+        if (scope)
+        { //delete the last node
+
+            variable_head = variable_head->parent;
+
+            free(variable_head->childe);
+
+            variable_head->childe = NULL;
+        }
+    }
+}
+
+//INT = 0, FLOAT = 1, STRUCT = 2, ARRAY = 3, BOOL = 4
+
+int get_type(char *name)
+{
+    if (!strcmp(name, "INT"))
+    {
+        return 0;
+    }
+    else if (!strcmp(name, "FLOAT"))
+    {
+        return 1;
+    }
+    else if (!strcmp(name, "STRUCT"))
+    {
+        return 2;
+    }
+}
+
+int check_exp_type(struct ast *exp) // check exp
+{
+
+    struct ast *child_layer = exp->next_layer;
+    struct ast *neighbor = child_layer->next_neighbor;
+
+    if (neighbor == NULL) //return type
+    {
+        return get_type(child_layer->name);
+    }
+    else
+    {
+        if (!strcmp(neighbor->name, "ASSIGN"))
+        { //TODO check define, error 1
+        }
+        else if (!strcmp(neighbor->name, "PLUS") ||
+                 !strcmp(neighbor->name, "MINUS") ||
+                 !strcmp(neighbor->name, "MUL") ||
+                 !strcmp(neighbor->name, "DIV"))
+        {
+            //check type, error 7
+        }
+        //bool
+        else if (!strcmp(neighbor->name, "AND") ||
+                 !strcmp(neighbor->name, "OR") ||
+                 !strcmp(neighbor->name, "LT") ||
+                 !strcmp(neighbor->name, "LE") ||
+                 !strcmp(neighbor->name, "GT") ||
+                 !strcmp(neighbor->name, "GE") ||
+                 !strcmp(neighbor->name, "NE") ||
+                 !strcmp(neighbor->name, "EQ"))
+        {
+        }
+    }
+    if (!strcmp(child_layer->name, "MINUS"))
+    {
+        return get_type(neighbor->name);
+    }
+    else if (!strcmp(child_layer->name, "NOT"))
+    {
+        //check bool
+        return 3;
+    }
+    else if (!strcmp(child_layer->name, "ID"))
+    { //function check, error 2
+        char *func_name = child_layer->value;
+        VAL_FUNTION look_up = function_symtab_lookup(function_head, func_name);
+        if (look_up.return_type == NULL)
+        {
+            printf("undefine function %s in line %d\n", func_name, exp->lineno);
+        }
+    }
+    else if (!strcmp(neighbor->name, "LB"))
+    {
+        //check array, error 10, 12
+    }
+    else if (!strcmp(neighbor->name, "DOT"))
+    {
+        //check struct, error 13, 14, 15
+    }
+
+    return -1;
+};
+
+//scope variable insert
+void variable_insert()
+{
+    symtab_variable *symtab_variable = variable_symtab_init();
+
+    struct variable_list *variable_head_tmp = (struct variable_list *)malloc(sizeof(struct variable_list));
+    memset(variable_head_tmp, '\0', sizeof(struct variable_list));
+
+    variable_head_tmp->symtab_variable = symtab_variable;
+
+    variable_head_tmp->parent = variable_head;
+
+    variable_head->childe = variable_head_tmp;
+
+    variable_head = variable_head->childe;
+}
+
+void global_charge(struct ast *ast)
+{
+    struct ast *specifier = ast->next_layer;
+    // int exp_type = check_exp_type(specifier);
+    if (!strcmp(specifier->next_layer->name, "TYPE")) //variable or function
+    {
+
+        if (!strcmp(specifier->next_neighbor->name, "FunDec")) //function
+        {
+
+            VAL_FUNTION function;
+            function.return_type = specifier->next_layer->value;
+            function.parameters = specifier->next_neighbor->next_layer->next_neighbor->next_neighbor;
+            char *name = specifier->next_neighbor->next_layer->value;
+            int insert_res = function_symtab_insert(function_head, name, function);
+            if (!insert_res)
+            {
+                printf("duplicate function name %s in line %d\n", name, specifier->lineno);
+            }
+            // ast = specifier->next_neighbor->next_neighbor; //jump the function define head
+
+            ast->next_layer = specifier->next_neighbor->next_neighbor;
+        }
+        else
+        { //variable
+            VAL_VARIABLE *value = malloc(sizeof(VAL_VARIABLE));
+            memset(value, '\0', sizeof(VAL_VARIABLE));
+            value->type = specifier->next_layer->value;
+        }
+    }
+    else // struct
+    {
+    }
+}
+
+void local_charge(struct ast *ast)
+{
+    struct ast *specifier = ast->next_layer;
+
+    char *type = specifier->next_layer->value;
+
+    // ast = ast->next_neighbor; //next neighbor
+}
+void scan_tree(struct ast *ast, int level)
 {
     if (ast != NULL)
     {
@@ -122,14 +353,14 @@ void parsetree(struct ast *ast, int level)
             {
                 printf(" (%d)", ast->lineno);
             }
-
             printf("\n");
         }
 
         struct ast *son = ast->next_layer;
         while (son != NULL)
         {
-            parsetree(son, level + 1);
+            // printf("%s\n", "hello");
+            scan_tree(son, level + 1);
             son = son->next_neighbor;
         }
     }
@@ -137,81 +368,13 @@ void parsetree(struct ast *ast, int level)
 
 int semantic(struct ast *ast, int level)
 {
-    symtab_variable *symtab_variable = variable_symtab_init();
-    symtab_function *symtab_function = function_symtab_init();
+
+    variable_head = malloc(sizeof(struct variable_list));
+    memset(variable_head, '\0', sizeof(struct variable_list));
+
+    function_head = function_symtab_init(); //function list
+
     parsetree(ast, level);
+    // scan_tree(ast, level);
     return 0;
 }
-
-int get_type(char *name)
-{
-    if (!strcmp(name, "INT"))
-    {
-        return 0;
-    }
-    else if (!strcmp(name, "FLOAT"))
-    {
-        return 1;
-    }
-    else if (!strcmp(name, "STRUCT"))
-    {
-        return 2;
-    }
-}
-
-int check_exp_type(struct ast *exp) // check exp
-{
-    struct ast *child_layer = exp->next_layer;
-    struct ast *neighbor = child_layer->next_neighbor;
-
-    if (neighbor == NULL) //return type
-    {
-        return get_type(child_layer->name);
-    }
-    else
-    {
-        if (!strcmp(neighbor->name, "ASSIGN"))
-        { //TODO check define, error 1
-        }
-        else if (!strcmp(neighbor->name, "PLUS") ||
-                 !strcmp(neighbor->name, "MINUS") ||
-                 !strcmp(neighbor->name, "MUL") ||
-                 !strcmp(neighbor->name, "DIV"))
-        {
-            //check type, error 7
-        }
-        //bool
-        else if (!strcmp(neighbor->name, "AND") ||
-                 !strcmp(neighbor->name, "OR") ||
-                 !strcmp(neighbor->name, "LT") ||
-                 !strcmp(neighbor->name, "LE") ||
-                 !strcmp(neighbor->name, "GT") ||
-                 !strcmp(neighbor->name, "GE") ||
-                 !strcmp(neighbor->name, "NE") ||
-                 !strcmp(neighbor->name, "EQ"))
-        {
-        }
-    }
-    if (!strcmp(child_layer->name, "MINUS"))
-    {
-        return get_type(neighbor->name);
-    }
-    else if (!strcmp(child_layer->name, "NOT"))
-    {
-        //check bool
-        return 3;
-    }
-    else if (!strcmp(child_layer->name, "ID"))
-    { //function check, error 2
-    }
-    else if (!strcmp(neighbor->name, "LB"))
-    {
-        //check array, error 10, 12
-    }
-    else if (!strcmp(neighbor->name, "DOT"))
-    {
-        //check struct, error 13, 14, 15
-    }
-
-    return -1;
-};

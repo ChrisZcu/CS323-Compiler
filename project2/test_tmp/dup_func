@@ -1,0 +1,5 @@
+int func1(){
+    int a = func4();
+}
+int func3(){}
+int func3(){}

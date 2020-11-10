@@ -16,8 +16,8 @@ typedef struct variable_symbol{
 }VAL_VARIABLE;
 
 typedef struct entry {
-    char key[KEY_LEN+1];
-    VAL_VARIABLE value;
+    char *key; //name
+    VAL_VARIABLE value; //type
 } entry;
 
 

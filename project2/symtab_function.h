@@ -24,7 +24,7 @@ typedef struct function_entry
 } entry_function;
 
 void function_entry_init(entry_function *self, char *key, VAL_FUNTION value)
-{
+{   
     sprintf(self->key, "%s", key);
     self->value = value;
 }

@@ -32,7 +32,7 @@ int variable_symtab_insert(symtab_variable *self, char *key, VAL_VARIABLE value)
     }
     symtab_variable *node = malloc(sizeof(symtab_variable));
     memset(node, '\0', sizeof(symtab_variable));
-    variable_entry_init(&node->entry, key, value);
+    variable_entry_init(&ptr->entry, key, value);
     node->next = NULL;
     ptr->next = node;
     return 1;

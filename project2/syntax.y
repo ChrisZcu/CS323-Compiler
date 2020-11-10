@@ -8,6 +8,7 @@
     #define AST_C
     #include "ast.c"
     #endif
+
     extern FILE *yyin;
     void yyerror(const char*);
     int has_error = 0;
