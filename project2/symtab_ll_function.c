@@ -23,7 +23,6 @@ symtab_function *function_symtab_init()
 
 int function_symtab_insert(symtab_function *self, char *key, VAL_FUNTION value)
 {
-    int i = 0;
     symtab_function *ptr = self;
     while (ptr->next != NULL)
     {
@@ -50,6 +49,7 @@ VAL_FUNTION function_symtab_lookup(symtab_function *self, char *key)
         ptr = ptr->next;
     }
     VAL_FUNTION val_tmp;
+    val_tmp.return_type = "null_false";
     return val_tmp;
 }
 

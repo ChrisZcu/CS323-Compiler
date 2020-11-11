@@ -79,6 +79,9 @@ void scan_tree(struct ast *ast, int level);
 void variable_insert();
 void global_charge(struct ast *ast);
 void local_charge(struct ast *ast);
+void dec_list_charge(char *type, struct ast *ast);
+void dec_charge(char *type, struct ast *ast);
+int var_dec_charge(char *type, struct ast *ast);
 //TODO check the semantic
 void parsetree(struct ast *ast, int level)
 {
@@ -105,14 +108,13 @@ void parsetree(struct ast *ast, int level)
                     global_charge(ast);
                 }
                 //local variable
-                if (!strcmp(ast->name, "Def"))
+                if (!strcmp(ast->name, "DefList"))
                 {
 
                     local_charge(ast);
                 }
                 if (!strcmp(ast->name, "Exp"))
                 {
-
                     check_exp_type(ast);
                 }
             }
@@ -188,7 +190,6 @@ int check_exp_type(struct ast *exp) // check exp
 
     struct ast *child_layer = exp->next_layer;
     struct ast *neighbor = child_layer->next_neighbor;
-
     if (neighbor == NULL) //return type
     {
         return get_type(child_layer->name);
@@ -230,7 +231,8 @@ int check_exp_type(struct ast *exp) // check exp
     { //function check, error 2
         char *func_name = child_layer->value;
         VAL_FUNTION look_up = function_symtab_lookup(function_head, func_name);
-        if (look_up.return_type == NULL)
+
+        if (!strcmp(look_up.return_type, "null_false"))
         {
             printf("undefine function %s in line %d\n", func_name, exp->lineno);
         }
@@ -301,12 +303,95 @@ void global_charge(struct ast *ast)
 
 void local_charge(struct ast *ast)
 {
-    struct ast *specifier = ast->next_layer;
-
+    struct ast *def = ast->next_layer;
+    struct ast *specifier = def->next_layer;
     char *type = specifier->next_layer->value;
 
-    // ast = ast->next_neighbor; //next neighbor
+    dec_list_charge(type, specifier->next_neighbor);
+
+    if (def->next_neighbor->name != NULL)
+    {
+        // ast->next_layer = def->next_neighbor;
+        local_charge(def->next_neighbor);
+    }
+
+    ast->next_layer = NULL;
 }
+
+void dec_list_charge(char *type, struct ast *ast)
+{
+    // printf("%s, %d\n", ast->name, ast->lineno);
+    struct ast *dec = ast->next_layer;
+    dec_charge(type, dec);
+
+    if (dec->next_neighbor != NULL)
+    {
+        ast = dec->next_neighbor->next_neighbor;
+        dec_list_charge(type, ast);
+    }
+}
+
+void dec_charge(char *type, struct ast *ast)
+{
+    int i;
+    i = var_dec_charge(type, ast->next_layer);
+
+    if (i >= 0 && ast->next_layer->next_neighbor != NULL)
+    {
+        // printf("%s, %d\n", ast->next_layer->next_neighbor->next_neighbor->name, ast->lineno);
+        check_exp_type(ast->next_layer->next_neighbor->next_neighbor);
+    }
+
+}
+
+int var_dec_charge(char *type, struct ast *ast)
+{
+    // printf("%s, %d\n", ast->name, ast->lineno);
+    int i;
+    i = 0;
+    char *name;
+    if (!strcmp(ast->next_layer->name, "ID"))
+    {
+        name = ast->next_layer->value;
+    }
+    else
+    {
+        struct ast *tmp_var_dec = ast;
+        while (!strcmp(tmp_var_dec->next_layer->name, "VarDex"))
+        {
+            i++;
+            tmp_var_dec = tmp_var_dec->next_layer;
+        }
+        name = tmp_var_dec->value;
+    }
+
+    struct variable_list *tmp_head = variable_head;
+    // printf("%d\n", variable_head->parent->parent != NULL);
+    while (tmp_head->parent != NULL)
+    {
+
+        VAL_VARIABLE a = variable_symtab_lookup(tmp_head->symtab_variable, name);
+
+        if (strcmp(a.type, "null_false"))
+        {
+            printf("duplicate variable %s in line %d\n", name, ast->lineno);
+            i = -1;
+            break;
+        }
+        tmp_head = tmp_head->parent;
+    }
+    if (i >= 0)
+    {
+        VAL_VARIABLE value;
+
+        value.type = type;
+        value.dim = i;
+        variable_symtab_insert(variable_head->symtab_variable, name, value);
+    }
+
+    return i;
+}
+
 void scan_tree(struct ast *ast, int level)
 {
     if (ast != NULL)
@@ -371,6 +456,7 @@ int semantic(struct ast *ast, int level)
 
     variable_head = malloc(sizeof(struct variable_list));
     memset(variable_head, '\0', sizeof(struct variable_list));
+    variable_head->parent = NULL;
 
     function_head = function_symtab_init(); //function list
 

@@ -7,7 +7,7 @@ typedef struct symtab_variable
 {
     entry entry;
     struct symtab_variable *next;
-}symtab_variable;
+} symtab_variable;
 
 // ************************************************************
 //    Your implementation goes here
@@ -30,9 +30,12 @@ int variable_symtab_insert(symtab_variable *self, char *key, VAL_VARIABLE value)
             return 0;
         ptr = ptr->next;
     }
+
     symtab_variable *node = malloc(sizeof(symtab_variable));
     memset(node, '\0', sizeof(symtab_variable));
+    
     variable_entry_init(&ptr->entry, key, value);
+
     node->next = NULL;
     ptr->next = node;
     return 1;
@@ -41,13 +44,14 @@ int variable_symtab_insert(symtab_variable *self, char *key, VAL_VARIABLE value)
 VAL_VARIABLE variable_symtab_lookup(symtab_variable *self, char *key)
 {
     symtab_variable *ptr = self;
-    while (ptr != NULL)
+    while (ptr->next != NULL)
     {
         if (strcmp(ptr->entry.key, key) == 0)
             return ptr->entry.value;
         ptr = ptr->next;
     }
     VAL_VARIABLE null_tmp;
+    null_tmp.type = "null_false";
     return null_tmp;
 }
 

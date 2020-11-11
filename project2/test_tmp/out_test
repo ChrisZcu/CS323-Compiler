@@ -1,11 +1,48 @@
-ExtDefList (4)
-  ExtDef (4)
-    Specifier (4)
-      TYPE: int
-    FunDec (4)
-      ID: func3
-      LP
-      RP
-    CompSt (4)
-      LC
-      RC
+Program (1)
+  ExtDefList (1)
+    ExtDef (1)
+      Specifier (1)
+        TYPE: int
+      FunDec (1)
+        ID: func1
+        LP
+        RP
+      CompSt (1)
+        LC
+        DefList (2)
+          Def (2)
+            Specifier (2)
+              TYPE: int
+            DecList (2)
+              Dec (2)
+                VarDec (2)
+                  ID: a
+                ASSIGN
+                Exp (2)
+                  ID: func4
+                  LP
+                  RP
+            SEMI
+        RC
+    ExtDefList (4)
+      ExtDef (4)
+        Specifier (4)
+          TYPE: int
+        FunDec (4)
+          ID: func3
+          LP
+          RP
+        CompSt (4)
+          LC
+          RC
+      ExtDefList (5)
+        ExtDef (5)
+          Specifier (5)
+            TYPE: int
+          FunDec (5)
+            ID: func3
+            LP
+            RP
+          CompSt (5)
+            LC
+            RC
