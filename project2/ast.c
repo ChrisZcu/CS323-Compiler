@@ -1,3 +1,8 @@
+#ifndef CTYPE_H
+#define CTYPE_H
+#include <ctype.h>
+#endif
+
 #ifndef STDARG_H
 #define STDARG_H
 #include <stdarg.h>
@@ -82,6 +87,7 @@ void local_charge(struct ast *ast);
 void dec_list_charge(char *type, struct ast *ast);
 void dec_charge(char *type, struct ast *ast);
 int var_dec_charge(char *type, struct ast *ast);
+int func_args_compare(struct ast *args1, struct ast *args2);
 //TODO check the semantic
 void parsetree(struct ast *ast, int level)
 {
@@ -98,13 +104,13 @@ void parsetree(struct ast *ast, int level)
                 if (!strcmp(ast->name, "CompSt"))
                 {
                     scope = 1;
-
                     // add new scope
                     variable_insert();
                 }
                 //global variable
                 if (!strcmp(ast->name, "ExtDef"))
                 {
+
                     global_charge(ast);
                 }
                 //local variable
@@ -167,22 +173,134 @@ void parsetree(struct ast *ast, int level)
     }
 }
 
-//INT = 0, FLOAT = 1, STRUCT = 2, ARRAY = 3, BOOL = 4
-
-int get_type(char *name)
+char *get_type(struct ast *ast)
 {
-    if (!strcmp(name, "INT"))
+    struct ast *child = ast->next_layer;
+    char *type = "";
+    if (!strcmp(child->name, "LP"))
     {
-        return 0;
+        return get_type(child->next_neighbor);
     }
-    else if (!strcmp(name, "FLOAT"))
+    else
     {
-        return 1;
+        if (child->next_neighbor != NULL)
+        {
+            if (!strcmp(child->next_neighbor->name, "OR") ||
+                !strcmp(child->next_neighbor->name, "AND") ||
+                !strcmp(child->next_neighbor->name, "LT") ||
+                !strcmp(child->next_neighbor->name, "LE") ||
+                !strcmp(child->next_neighbor->name, "GT") ||
+                !strcmp(child->next_neighbor->name, "GE") ||
+                !strcmp(child->next_neighbor->name, "NE") ||
+                !strcmp(child->next_neighbor->name, "EQ"))
+            {
+                char *type_left = get_type(child);
+                char *type_right = get_type(child->next_neighbor->next_neighbor);
+
+                if (strcmp(type_left, "int") || strcmp(type_right, "int"))
+                {
+                    printf("error type 7 for unmatching operands in line %d\n", child->lineno);
+                }
+                else
+                {
+                    type = "boolean";
+                }
+            }
+            else if (!strcmp(child->next_neighbor->name, "PLUS") ||
+                     !strcmp(child->next_neighbor->name, "MINUS") ||
+                     !strcmp(child->next_neighbor->name, "MUL") ||
+                     !strcmp(child->next_neighbor->name, "DIV"))
+            {
+                char *type1 = get_type(child);
+                char *type2 = get_type(child->next_neighbor->next_neighbor);
+
+                if (!((!strcmp(type1, "int") || !strcmp(type1, "float")) &&
+                      (!strcmp(type2, "int") || !strcmp(type2, "float"))))
+                {
+                    printf("error type 7 for unmatching operands in line %d\n", child->lineno);
+                }
+                else
+                {
+
+                    if (!strcmp(type1, "float") ||
+                        !strcmp(type2, "float"))
+                    {
+                        type = "float";
+                    }
+                    else
+                    {
+                        type = "int";
+                    }
+                }
+            }
+            else if (!strcmp(child->name, "NOT"))
+            {
+                char *type1 = get_type(child->next_neighbor);
+                if (strcmp(type1, "int"))
+                {
+                    printf("error type 7 for unmatching operands in line %d\n", child->lineno);
+                }
+                else
+                {
+
+                    type = "boolean";
+                }
+            }
+            else if (!strcmp(child->name, "MINUS"))
+            {
+                char *type1 = get_type(child->next_neighbor);
+                if (strcmp(type1, "int") && strcmp(type1, "float"))
+                {
+                    printf("error type 7 for unmatching operands in line %d\n", child->lineno);
+                }
+                else
+                {
+                    type = get_type(child->next_neighbor);
+                }
+            }
+            else if (!strcmp(child->next_neighbor->name, "LP"))
+            { //function
+                char *func_name = child->value;
+                VAL_FUNTION func_value = function_symtab_lookup(function_head, func_name);
+                type = func_value.return_type;
+            }
+            else if (!strcmp(child->next_neighbor->name, "LB"))
+            { //array
+                if (strcmp(child->next_neighbor->next_neighbor->next_layer->name, "INT"))
+                {
+                    printf("type 12 error on line %d\n", child->next_neighbor->next_neighbor->next_layer->lineno);
+                }
+            }
+            else if (!strcmp(child->next_neighbor->name, "DOT"))
+            { //struct
+            }
+        }
+        else
+        {
+
+            if (!strcmp(child->name, "ID"))
+            { //variable
+            }
+            else
+            {
+                if (!strcmp(child->name, "INT"))
+                {
+                    type = "int";
+                }
+                else if (!strcmp(child->name, "FLOAT"))
+                {
+
+                    type = "float";
+                }
+                else if (!strcmp(child->name, "CHAR"))
+                {
+                    type = "char";
+                }
+            }
+        }
     }
-    else if (!strcmp(name, "STRUCT"))
-    {
-        return 2;
-    }
+
+    return type;
 }
 
 int check_exp_type(struct ast *exp) // check exp
@@ -190,21 +308,84 @@ int check_exp_type(struct ast *exp) // check exp
 
     struct ast *child_layer = exp->next_layer;
     struct ast *neighbor = child_layer->next_neighbor;
-    if (neighbor == NULL) //return type
+    if (neighbor == NULL)
     {
-        return get_type(child_layer->name);
+        char *name = child_layer->value;
+        if (!strcmp(child_layer->name, "ID"))
+        { //variable
+            struct variable_list *tmp_head = variable_head;
+            int undefine_ = 1;
+            while (tmp_head->parent != NULL)
+            {
+
+                VAL_VARIABLE a = variable_symtab_lookup(tmp_head->symtab_variable, name);
+
+                if (strcmp(a.type, "null_false"))
+                {
+                    undefine_ = 0;
+                    break;
+                }
+                tmp_head = tmp_head->parent;
+            }
+            if (undefine_)
+            {
+                printf("variable %s not define before in line %d\n", name, child_layer->lineno);
+            }
+        }
+        else
+        {
+        }
+
+        return 0;
     }
     else
     {
         if (!strcmp(neighbor->name, "ASSIGN"))
-        { //TODO check define, error 1
+        {
+            if (strcmp(child_layer->next_layer->name, "ID"))
+            {
+                printf("Error type 6: rvalue on the left side of assignment operator on line %d\n", child_layer->next_layer->lineno);
+            }
+            else
+            {
+                //variable
+                char *name = child_layer->next_layer->value;
+                struct variable_list *tmp_head = variable_head;
+                int undefine_ = 1;
+                VAL_VARIABLE a;
+                while (tmp_head->parent != NULL)
+                {
+
+                    a = variable_symtab_lookup(tmp_head->symtab_variable, name);
+
+                    if (strcmp(a.type, "null_false"))
+                    {
+                        undefine_ = 0;
+                        break;
+                    }
+                    tmp_head = tmp_head->parent;
+                }
+                if (undefine_)
+                {
+                    printf("variable %s is not defined before in line %d\n", name, child_layer->lineno);
+                }
+                else
+                { //define before
+                    char *a_type = a.type;
+                    char *right_type = get_type(neighbor->next_neighbor);
+
+                    if (strcmp(a_type, right_type))
+                    {
+                        printf("type 5 error on line %d for unmatching type\n", neighbor->next_neighbor->lineno);
+                    }
+                }
+            }
         }
         else if (!strcmp(neighbor->name, "PLUS") ||
                  !strcmp(neighbor->name, "MINUS") ||
                  !strcmp(neighbor->name, "MUL") ||
                  !strcmp(neighbor->name, "DIV"))
         {
-            //check type, error 7
         }
         //bool
         else if (!strcmp(neighbor->name, "AND") ||
@@ -220,7 +401,7 @@ int check_exp_type(struct ast *exp) // check exp
     }
     if (!strcmp(child_layer->name, "MINUS"))
     {
-        return get_type(neighbor->name);
+        return 0;
     }
     else if (!strcmp(child_layer->name, "NOT"))
     {
@@ -228,13 +409,44 @@ int check_exp_type(struct ast *exp) // check exp
         return 3;
     }
     else if (!strcmp(child_layer->name, "ID"))
-    { //function check, error 2
+    { //function check
         char *func_name = child_layer->value;
         VAL_FUNTION look_up = function_symtab_lookup(function_head, func_name);
 
         if (!strcmp(look_up.return_type, "null_false"))
-        {
-            printf("undefine function %s in line %d\n", func_name, exp->lineno);
+        { //illegal function
+            struct variable_list *tmp_head = variable_head;
+            int undefine_ = 1;
+            while (tmp_head->parent != NULL)
+            {
+
+                VAL_VARIABLE a = variable_symtab_lookup(tmp_head->symtab_variable, func_name);
+
+                if (strcmp(a.type, "null_false"))
+                {
+                    undefine_ = 0;
+                    printf("miss using variable %s as function in line %d\n", func_name, child_layer->lineno);
+                    break;
+                }
+                tmp_head = tmp_head->parent;
+            }
+            if (undefine_)
+            {
+                printf("undefine function %s in line %d\n", func_name, exp->lineno);
+            }
+        }
+        else
+        { //legal function
+            struct ast *args_tmp = NULL;
+            if (strcmp(child_layer->next_neighbor->next_neighbor->name, "RP"))
+            {
+                args_tmp = child_layer->next_neighbor->next_neighbor;
+            }
+            int com_res = func_args_compare(args_tmp, look_up.parameters);
+            if (!com_res)
+            {
+                printf("error type 9 for arguments mismatch in line %d\n", child_layer->next_neighbor->next_neighbor->lineno);
+            }
         }
     }
     else if (!strcmp(neighbor->name, "LB"))
@@ -286,6 +498,29 @@ void global_charge(struct ast *ast)
                 printf("duplicate function name %s in line %d\n", name, specifier->lineno);
             }
             // ast = specifier->next_neighbor->next_neighbor; //jump the function define head
+            struct ast *stmt_tmp = specifier->next_neighbor->next_neighbor->next_layer->next_neighbor->next_neighbor;
+            struct ast *stmt_parent = stmt_tmp;
+
+            while (stmt_tmp->next_layer->next_neighbor->name != NULL)
+            {
+                stmt_parent = stmt_tmp;
+                stmt_tmp = stmt_tmp->next_layer->next_neighbor;
+            }
+
+            if (strcmp(stmt_tmp->next_layer->next_layer->name, "RETURN"))
+            {
+                printf("missing return value on line %d\n", stmt_tmp->next_layer->next_layer->lineno);
+                return;
+            }
+
+            char *return_type = get_type(stmt_tmp->next_layer->next_layer->next_neighbor);
+
+            if (strcmp(function.return_type, return_type))
+            {
+                printf("error type 8 for unmatching return type on line %d\n", stmt_tmp->next_layer->next_layer->next_neighbor->lineno);
+            }
+
+            stmt_parent->next_layer->next_neighbor = NULL;
 
             ast->next_layer = specifier->next_neighbor->next_neighbor;
         }
@@ -338,10 +573,14 @@ void dec_charge(char *type, struct ast *ast)
 
     if (i >= 0 && ast->next_layer->next_neighbor != NULL)
     {
-        // printf("%s, %d\n", ast->next_layer->next_neighbor->next_neighbor->name, ast->lineno);
+        //assign
         check_exp_type(ast->next_layer->next_neighbor->next_neighbor);
+        char *right_type = get_type(ast->next_layer->next_neighbor->next_neighbor);
+        if (strcmp(type, right_type))
+        {
+            printf("type 5 error on line %d for unmatching type\n", ast->next_layer->next_neighbor->next_neighbor->lineno);
+        }
     }
-
 }
 
 int var_dec_charge(char *type, struct ast *ast)
@@ -448,6 +687,55 @@ void scan_tree(struct ast *ast, int level)
             scan_tree(son, level + 1);
             son = son->next_neighbor;
         }
+    }
+}
+
+int get_args_num(struct ast *var_list)
+{
+    int i = 0;
+    struct ast *var_tmp = var_list;
+    while (var_tmp->next_layer->next_neighbor != NULL)
+    {
+        i++;
+        var_tmp = var_tmp->next_layer->next_neighbor->next_neighbor;
+    }
+    return i;
+}
+//args1: tmp, args2:require
+int func_args_compare(struct ast *args1, struct ast *args2)
+{
+    if ((args1 == NULL && args2 != NULL) ||
+        (args1 != NULL && args2 == NULL))
+
+    {
+        return 0;
+    }
+
+    //number
+    int args1_num = get_args_num(args1);
+    int args2_num = get_args_num(args2);
+
+    if (args2_num != args1_num)
+    {
+        return 0;
+    }
+
+    //type
+    struct ast *var_tmp_1 = args1;
+    struct ast *var_tmp_2 = args2;
+
+    while (var_tmp_1->next_layer->next_neighbor != NULL)
+    {
+        char *tmp_type = get_type(var_tmp_1->next_layer);
+        char *param_type = var_tmp_2->next_layer->next_layer->next_layer->value;
+        if (strcmp(tmp_type, param_type))
+        {
+            printf("error type 9 for arguments mismatch in line %d\n", args1->lineno);
+            break;
+        }
+
+        var_tmp_1 = var_tmp_1->next_layer->next_neighbor->next_neighbor;
+        var_tmp_2 = var_tmp_2->next_layer->next_neighbor->next_neighbor;
     }
 }
 

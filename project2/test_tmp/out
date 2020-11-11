@@ -12,6 +12,13 @@ Program (1)
               TYPE: int
             VarDec (1)
               ID: a
+          COMMA
+          VarList (1)
+            ParamDec (1)
+              Specifier (1)
+                TYPE: int
+              VarDec (1)
+                ID: b
         RP
       CompSt (2)
         LC
@@ -43,6 +50,13 @@ Program (1)
                   Exp (4)
                     ID: funt_2
                     LP
+                    Args (4)
+                      Exp (4)
+                        ID: a
+                      COMMA
+                      Args (4)
+                        Exp (4)
+                          INT: 1
                     RP
               SEMI
             DefList (5)
@@ -103,71 +117,62 @@ Program (1)
             SEMI
           StmtList (9)
             Stmt (9)
-              Exp (9)
-                Exp (9)
-                  ID: a
-                ASSIGN
-                Exp (9)
-                  CHAR: 's'
-              SEMI
-            StmtList (10)
-              Stmt (10)
-                CompSt (10)
-                  LC
-                  DefList (11)
-                    Def (11)
-                      Specifier (11)
-                        TYPE: int
-                      DecList (11)
-                        Dec (11)
-                          VarDec (11)
-                            ID: d
-                          ASSIGN
-                          Exp (11)
-                            INT: 1
-                      SEMI
-                  RC
-              StmtList (13)
-                Stmt (13)
-                  RETURN
-                  Exp (13)
-                    INT: 0
-                  SEMI
+              CompSt (9)
+                LC
+                DefList (10)
+                  Def (10)
+                    Specifier (10)
+                      TYPE: int
+                    DecList (10)
+                      Dec (10)
+                        VarDec (10)
+                          ID: d
+                        ASSIGN
+                        Exp (10)
+                          INT: 1
+                    SEMI
+                RC
+            StmtList (12)
+              Stmt (12)
+                RETURN
+                Exp (12)
+                  INT: 0
+                SEMI
         RC
-    ExtDefList (15)
-      ExtDef (15)
-        Specifier (15)
+    ExtDefList (14)
+      ExtDef (14)
+        Specifier (14)
           TYPE: float
-        FunDec (15)
+        FunDec (14)
           ID: funt_2
           LP
-          VarList (15)
-            ParamDec (15)
-              Specifier (15)
+          VarList (14)
+            ParamDec (14)
+              Specifier (14)
                 TYPE: int
-              VarDec (15)
+              VarDec (14)
                 ID: a
             COMMA
-            VarList (15)
-              ParamDec (15)
-                Specifier (15)
+            VarList (14)
+              ParamDec (14)
+                Specifier (14)
                   TYPE: int
-                VarDec (15)
+                VarDec (14)
                   ID: b
           RP
-        CompSt (15)
+        CompSt (14)
           LC
-          StmtList (16)
-            Stmt (16)
+          StmtList (15)
+            Stmt (15)
               RETURN
-              Exp (16)
+              Exp (15)
                 FLOAT: 1.0
               SEMI
           RC
-      ExtDefList (18)
-        ExtDef (18)
-          Specifier (18)
-            StructSpecifier (18)
+      ExtDefList (17)
+        ExtDef (17)
+          Specifier (17)
+            StructSpecifier (17)
               STRUCT
               ID: a
               LC
