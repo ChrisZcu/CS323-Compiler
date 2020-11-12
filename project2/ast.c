@@ -88,9 +88,17 @@ void dec_list_charge(char *type, struct ast *ast);
 void dec_charge(char *type, struct ast *ast);
 int var_dec_charge(char *type, struct ast *ast);
 int func_args_compare(struct ast *args1, struct ast *args2);
+void func_return_type_compare(struct ast *ast);
+int variable_check_define(char *name);
+int variable_check_define_global(char *name);
+void variable_delete(int is_struct);
+VAL_VARIABLE get_variable_value(char *name);
+VAL_VARIABLE get_struct_field_value(struct symtab_variable *struct_field, char *name);
+
 //TODO check the semantic
 void parsetree(struct ast *ast, int level)
 {
+    // printf("%s, %d\n", ast->name, ast->lineno);
     int scope = 0;
     if (ast != NULL)
     {
@@ -110,7 +118,12 @@ void parsetree(struct ast *ast, int level)
                 //global variable
                 if (!strcmp(ast->name, "ExtDef"))
                 {
+                    if (!strcmp(ast->next_layer->next_neighbor->name, "SEMI")) //struct
 
+                    { //global, do not delete
+
+                        variable_insert();
+                    }
                     global_charge(ast);
                 }
                 //local variable
@@ -122,6 +135,10 @@ void parsetree(struct ast *ast, int level)
                 if (!strcmp(ast->name, "Exp"))
                 {
                     check_exp_type(ast);
+                }
+                if (!strcmp(ast->name, "RETURN"))
+                {
+                    func_return_type_compare(ast->next_neighbor);
                 }
             }
             if (!strcmp(ast->name, "TYPE") ||
@@ -163,12 +180,8 @@ void parsetree(struct ast *ast, int level)
         }
         if (scope)
         { //delete the last node
-
-            variable_head = variable_head->parent;
-
-            free(variable_head->childe);
-
-            variable_head->childe = NULL;
+            variable_delete(0);
+            scope = 0;
         }
     }
 }
@@ -242,7 +255,6 @@ char *get_type(struct ast *ast)
                 }
                 else
                 {
-
                     type = "boolean";
                 }
             }
@@ -266,20 +278,88 @@ char *get_type(struct ast *ast)
             }
             else if (!strcmp(child->next_neighbor->name, "LB"))
             { //array
-                if (strcmp(child->next_neighbor->next_neighbor->next_layer->name, "INT"))
+
+                //FIXME
+                struct ast *tmp_exp = child;
+
+                if (!strcmp(tmp_exp->next_layer->name, "ID") &&
+                    strcmp(tmp_exp->next_neighbor->next_neighbor->next_layer->name, "INT"))
                 {
-                    printf("type 12 error on line %d\n", child->next_neighbor->next_neighbor->next_layer->lineno);
+                    printf("type 12 error on line for not int in ary index %d\n", tmp_exp->next_neighbor->next_neighbor->next_layer->lineno);
                 }
+                int dim = 1;
+                while (strcmp(tmp_exp->next_layer->name, "ID"))
+                {
+                    dim++;
+                    if (strcmp(tmp_exp->next_neighbor->next_neighbor->next_layer->name, "INT"))
+                    {
+                        printf("type 12 error on line for not int in ary index %d\n", tmp_exp->next_neighbor->next_neighbor->next_layer->lineno);
+                    }
+                    tmp_exp = tmp_exp->next_layer;
+                }
+
+                char *name = tmp_exp->next_layer->value;
+
+                //******************
+                struct variable_list *tmp_head = variable_head;
+                int undefine_ = 1;
+                while (tmp_head->parent != NULL)
+                {
+
+                    VAL_VARIABLE a = variable_symtab_lookup(tmp_head->symtab_variable, name);
+
+                    if (strcmp(a.type, "null_false"))
+                    {
+                        undefine_ = 0;
+                        if (a.dim > 0 && a.dim < dim)
+                        {
+                            printf("error type 10 for applying high dimention [] on non-array object on line %d.\n", child->lineno);
+                        }
+                        else if (a.dim == 0)
+                        {
+                            printf("error type 10 for applying [] on non-array object on line %d.\n", child->lineno);
+                        }
+
+                        {
+                        }
+
+                        return a.type;
+                        break;
+                    }
+                    tmp_head = tmp_head->parent;
+                }
+
+                if (undefine_)
+                {
+                    printf("variable %s not define before in line %d\n", name, child->lineno);
+                }
+                //******************
             }
             else if (!strcmp(child->next_neighbor->name, "DOT"))
             { //struct
+                char *struct_type = get_type(child);
+                char *field_name = child->next_neighbor->next_neighbor->value;
+                if (!strcmp(struct_type, "int") ||
+                    !strcmp(struct_type, "float") ||
+                    !strcmp(struct_type, "char") ||
+                    !strcmp(struct_type, "boolean"))
+                {
+                    printf("error type 13 for non struct object with dot in line %d\n", child->lineno);
+                }
+                else
+                {
+                    VAL_VARIABLE struct_field = get_variable_value(struct_type);
+                    VAL_VARIABLE value = get_struct_field_value(struct_field.field, field_name);
+                    type = value.type;
+                }
             }
         }
         else
         {
-
             if (!strcmp(child->name, "ID"))
             { //variable
+                type = get_variable_value(child->value).type;
+                // printf("%s\n", type);
             }
             else
             {
@@ -478,10 +558,21 @@ void variable_insert()
     variable_head = variable_head->childe;
 }
 
+void variable_delete(int is_struct)
+{
+    variable_head = variable_head->parent;
+    if (!is_struct)
+    {
+        free(variable_head->childe);
+    }
+
+    variable_head->childe = NULL;
+}
+
 void global_charge(struct ast *ast)
 {
+
     struct ast *specifier = ast->next_layer;
-    // int exp_type = check_exp_type(specifier);
     if (!strcmp(specifier->next_layer->name, "TYPE")) //variable or function
     {
 
@@ -497,30 +588,6 @@ void global_charge(struct ast *ast)
             {
                 printf("duplicate function name %s in line %d\n", name, specifier->lineno);
             }
-            // ast = specifier->next_neighbor->next_neighbor; //jump the function define head
-            struct ast *stmt_tmp = specifier->next_neighbor->next_neighbor->next_layer->next_neighbor->next_neighbor;
-            struct ast *stmt_parent = stmt_tmp;
-
-            while (stmt_tmp->next_layer->next_neighbor->name != NULL)
-            {
-                stmt_parent = stmt_tmp;
-                stmt_tmp = stmt_tmp->next_layer->next_neighbor;
-            }
-
-            if (strcmp(stmt_tmp->next_layer->next_layer->name, "RETURN"))
-            {
-                printf("missing return value on line %d\n", stmt_tmp->next_layer->next_layer->lineno);
-                return;
-            }
-
-            char *return_type = get_type(stmt_tmp->next_layer->next_layer->next_neighbor);
-
-            if (strcmp(function.return_type, return_type))
-            {
-                printf("error type 8 for unmatching return type on line %d\n", stmt_tmp->next_layer->next_layer->next_neighbor->lineno);
-            }
-
-            stmt_parent->next_layer->next_neighbor = NULL;
 
             ast->next_layer = specifier->next_neighbor->next_neighbor;
         }
@@ -533,19 +600,64 @@ void global_charge(struct ast *ast)
     }
     else // struct
     {
+
+        struct ast *struct_layer = specifier->next_layer->next_layer;
+        if (struct_layer->next_neighbor->next_neighbor != NULL)
+        { //define struct
+            char *struct_name = struct_layer->next_neighbor->value;
+            int define = variable_check_define(struct_name);
+            if (define)
+            {
+                printf("error type 15 for redefine struct in line %d\n", struct_layer->lineno);
+            }
+            else
+            {
+                VAL_VARIABLE value;
+                value.type = struct_name;
+                variable_symtab_insert(variable_head->symtab_variable, struct_name, value);
+                struct ast *def_list = struct_layer->next_neighbor->next_neighbor->next_neighbor;
+                variable_insert();
+                local_charge(def_list);
+                value.field = variable_head->symtab_variable;
+                variable_delete(1);
+                variable_head->symtab_variable->entry.value = value;
+            }
+        }
     }
 }
 
 void local_charge(struct ast *ast)
 {
+    // printf("%s, %d\n", ast->name, ast->lineno);
+
+    if (ast->next_layer == NULL)
+    { //struct for first line, hanle it before
+        return;
+    }
+
     struct ast *def = ast->next_layer;
     struct ast *specifier = def->next_layer;
-    char *type = specifier->next_layer->value;
+    if (!strcmp(specifier->next_layer->name, "TYPE"))
+    { //variable
+        char *type = specifier->next_layer->value;
+        dec_list_charge(type, specifier->next_neighbor);
+    }
+    else
+    {
+        char *type = specifier->next_layer->next_layer->next_neighbor->value;
+        int define = variable_check_define_global(type);
 
-    dec_list_charge(type, specifier->next_neighbor);
+        if (!define)
+        {
+            printf("error type 14 for undefine struct in line %d\n", specifier->next_layer->lineno);
+        }
+
+        dec_list_charge(type, specifier->next_neighbor);
+    }
 
     if (def->next_neighbor->name != NULL)
     {
+
         // ast->next_layer = def->next_neighbor;
         local_charge(def->next_neighbor);
     }
@@ -596,12 +708,12 @@ int var_dec_charge(char *type, struct ast *ast)
     else
     {
         struct ast *tmp_var_dec = ast;
-        while (!strcmp(tmp_var_dec->next_layer->name, "VarDex"))
+        while (!strcmp(tmp_var_dec->next_layer->name, "VarDec"))
         {
             i++;
             tmp_var_dec = tmp_var_dec->next_layer;
         }
-        name = tmp_var_dec->value;
+        name = tmp_var_dec->next_layer->value;
     }
 
     struct variable_list *tmp_head = variable_head;
@@ -701,6 +813,20 @@ int get_args_num(struct ast *var_list)
     }
     return i;
 }
+
+void func_return_type_compare(struct ast *ast)
+{
+
+    VAL_FUNTION function = function_head->entry.value;
+
+    char *return_type = get_type(ast);
+
+    if (strcmp(function.return_type, return_type))
+    {
+        printf("error type 8 for unmatching return type on line %d\n", ast->lineno);
+    }
+}
+
 //args1: tmp, args2:require
 int func_args_compare(struct ast *args1, struct ast *args2)
 {
@@ -737,6 +863,66 @@ int func_args_compare(struct ast *args1, struct ast *args2)
         var_tmp_1 = var_tmp_1->next_layer->next_neighbor->next_neighbor;
         var_tmp_2 = var_tmp_2->next_layer->next_neighbor->next_neighbor;
     }
+}
+
+VAL_VARIABLE get_variable_value(char *name)
+{
+
+    struct variable_list *tmp_head = variable_head;
+    VAL_VARIABLE a = variable_symtab_lookup(tmp_head->symtab_variable, name);
+    while (tmp_head->parent != NULL)
+    {
+
+        a = variable_symtab_lookup(tmp_head->symtab_variable, name);
+
+        if (strcmp(a.type, "null_false"))
+        { //define before
+            // printf("%s\n", a.type);
+            return a;
+        }
+        tmp_head = tmp_head->parent;
+    }
+
+    return a;
+}
+
+VAL_VARIABLE get_struct_field_value(struct symtab_variable *struct_field, char *name)
+{
+    VAL_VARIABLE value = variable_symtab_lookup(struct_field, name);
+    return value;
+}
+
+int variable_check_define(char *name)
+{
+    struct variable_list *tmp_head = variable_head;
+    while (tmp_head->parent != NULL)
+    {
+        VAL_VARIABLE a = variable_symtab_lookup(tmp_head->symtab_variable, name);
+
+        if (strcmp(a.type, "null_false"))
+        { //define before
+            return 1;
+        }
+        tmp_head = tmp_head->parent;
+    }
+
+    return 0;
+}
+
+int variable_check_define_global(char *name)
+{
+    struct variable_list *tmp_head = variable_head;
+    while (tmp_head->parent->parent != NULL)
+    {
+        tmp_head = tmp_head->parent;
+    }
+    VAL_VARIABLE a = variable_symtab_lookup(tmp_head->symtab_variable, name);
+
+    if (strcmp(a.type, "null_false"))
+    { //define before
+        return 1;
+    }
+    return 0;
 }
 
 int semantic(struct ast *ast, int level)

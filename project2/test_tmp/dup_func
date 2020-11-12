@@ -1,6 +1,10 @@
-int fun3(){
-    char c = 'a';
+struct s{
+    struct s a;
+    int b;
+    float c; 
+};
+int fun(){
+    struct s str;
+
     return 1;
 }
-
-

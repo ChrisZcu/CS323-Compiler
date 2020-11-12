@@ -8,12 +8,13 @@
 #define KEY_LEN 32
 
 typedef struct symtab_variable symtab_variable;
-
+typedef struct entry entry;
 /* symbol table entry, only used internally */
 typedef struct variable_symbol
 {
-    char *type;
-    int dim; //for array
+    char *type; // int, char, float, struct(the same name as itself)
+    int dim;    //for array
+    symtab_variable *field; // for struct
 } VAL_VARIABLE;
 
 typedef struct entry
