@@ -1,0 +1,9 @@
+int test(int x, int y)
+{
+  return 1;
+}
+int test_func()
+{
+  int a = test(1, 2);
+  int c = a[1];
+}

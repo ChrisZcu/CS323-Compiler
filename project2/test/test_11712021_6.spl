@@ -1,0 +1,13 @@
+int test(int i, int n)
+{
+  int res = 0;
+  if (1)
+  {
+    1*2+1 = res;
+  }
+  else 
+  {
+    res = 0;
+  }
+  return res;
+}

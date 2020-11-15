@@ -1,0 +1,13 @@
+struct test
+{
+  int test1;
+  float test2;
+  struct test test3;
+};
+int test_fun()
+{
+  struct test aa;
+  float a = 1.0;
+  aa.test3 = a + 2;
+  return 0;
+}

@@ -1,0 +1,12 @@
+float test(int x, int y)
+{
+  return (x * y - 1.0);
+}
+float compare(int a, int b)
+{ 
+  float a = test(1, 1);
+  if (b > a) {return -1.0;}
+  if (b == a) {return 0.0;}
+  return 1.0;
+}
+

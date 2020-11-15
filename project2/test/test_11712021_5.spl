@@ -1,0 +1,5 @@
+struct test{};
+int test_2_r05()
+{
+  return test.a;
+}
