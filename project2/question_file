@@ -1,0 +1,227 @@
+./test_1NbPhzZi.spl:struct A {
+./test_1NbPhzZi.spl:    int a;
+./test_1NbPhzZi.spl:};
+./test_1NbPhzZi.spl:
+./test_1NbPhzZi.spl:struct B {
+./test_1NbPhzZi.spl:    struct A ba;
+./test_1NbPhzZi.spl:    int b;
+./test_1NbPhzZi.spl:};
+./test_1NbPhzZi.spl:
+./test_1NbPhzZi.spl:int main() {
+./test_1NbPhzZi.spl:    struct A aa;
+./test_1NbPhzZi.spl:    struct B bb;
+./test_1NbPhzZi.spl:    aa.a = 1;
+./test_1NbPhzZi.spl:    bb.ba = aa;
+./test_1NbPhzZi.spl:    bb.b = 2;
+./test_1NbPhzZi.spl:    bb.b = 2.0;     
+./test_1NbPhzZi.spl:    bb.ba.a = 2;
+./test_1NbPhzZi.spl:    bb.ba.a = 2.0;  
+./test_7GIED8So.spl:struct Apple{
+./test_7GIED8So.spl:    int price;
+./test_7GIED8So.spl:};
+./test_7GIED8So.spl:int test_11710204_7()
+./test_7GIED8So.spl:{
+./test_7GIED8So.spl:  int a = 2;
+./test_7GIED8So.spl:  struct Apple apple;
+./test_7GIED8So.spl:  apple.price = apple + a;
+./test_7GIED8So.spl:  return a;
+./test_7GIED8So.spl:}
+./test_7GIED8So.spl:
+./test_9mFjftiC.spl:int test_11712702_10(int a[2], int b[2])
+./test_9mFjftiC.spl:{
+./test_9mFjftiC.spl:  char c = 'c';
+./test_9mFjftiC.spl:  if (a[0] > b)
+./test_9mFjftiC.spl:  {
+./test_9mFjftiC.spl:    return a[0];
+./test_9mFjftiC.spl:  }
+./test_9mFjftiC.spl:  else
+./test_9mFjftiC.spl:  {
+./test_9mFjftiC.spl:    return b[0];
+./test_9mFjftiC.spl:  }
+./test_9mFjftiC.spl:}
+./test_bkuVx6MW.spl:struct Attr {};
+./test_bkuVx6MW.spl:
+./test_bkuVx6MW.spl:struct Demo {
+./test_bkuVx6MW.spl:    int m1[2];
+./test_bkuVx6MW.spl:    struct Attr m2;
+./test_bkuVx6MW.spl:} v1, v2[2];
+./test_bkuVx6MW.spl:
+./test_bkuVx6MW.spl:int test_11711906_2() {
+./test_bkuVx6MW.spl:    float v3 = 1.0;
+./test_bkuVx6MW.spl:    int v4[3][2];
+./test_bkuVx6MW.spl:    struct Attr v5;
+./test_bkuVx6MW.spl:
+./test_bkuVx6MW.spl:    v1.m1[0] = v3;
+./test_bkuVx6MW.spl:    v1.m1 = v4[2];
+./test_bkuVx6MW.spl:    v2[0].m2 = v5;
+./test_bkuVx6MW.spl:    v2[0].m3 = v6;
+./test_bkuVx6MW.spl:
+./test_bkuVx6MW.spl:    return 0;
+./test_C3zfwUYm.spl:float func () {
+./test_C3zfwUYm.spl:    return 2.1;
+./test_C3zfwUYm.spl:}
+./test_C3zfwUYm.spl:
+./test_C3zfwUYm.spl:int main () {
+./test_C3zfwUYm.spl:    int a[5];
+./test_C3zfwUYm.spl:    a[func()];
+./test_dCAGwiRh.spl:struct aa {
+./test_dCAGwiRh.spl:    int num;
+./test_dCAGwiRh.spl:    int size;
+./test_dCAGwiRh.spl:};
+./test_dCAGwiRh.spl:
+./test_dCAGwiRh.spl:struct aa {
+./test_dCAGwiRh.spl:    int size;
+./test_dCAGwiRh.spl:    int num;
+./test_dCAGwiRh.spl:};
+./test_dCAGwiRh.spl:
+./test_dCAGwiRh.spl:int main () {
+./test_dCAGwiRh.spl:    struct aa a;
+./test_FPcr8W46.spl:int test_11712702_1()
+./test_FPcr8W46.spl:{
+./test_FPcr8W46.spl:  int i=0,j=0;
+./test_FPcr8W46.spl:  i = j + a;
+./test_FPcr8W46.spl:  return 0.1;
+./test_FPcr8W46.spl:}
+./test_IcyFZJKS.spl:int add(int m, int n)
+./test_IcyFZJKS.spl:{
+./test_IcyFZJKS.spl:  return m + n;
+./test_IcyFZJKS.spl:}
+./test_IcyFZJKS.spl:int test_2_r02()
+./test_IcyFZJKS.spl:{
+./test_IcyFZJKS.spl:  int a = 4;
+./test_IcyFZJKS.spl:  int b = add(a);
+./test_IcyFZJKS.spl:  return b;
+./test_IcyFZJKS.spl:}
+./test_IVWatdcR.spl:int test_11712212_1(){
+./test_IVWatdcR.spl:  int a = 5;
+./test_IVWatdcR.spl:  int b = 10;
+./test_IVWatdcR.spl:  int c = 100;
+./test_IVWatdcR.spl:  int d = a * b + c;
+./test_IVWatdcR.spl:  return d;
+./test_KiSGZyxu.spl:int test1(int a, int b)
+./test_KiSGZyxu.spl:{
+./test_KiSGZyxu.spl:    while(0) {
+./test_KiSGZyxu.spl:        if(a) {
+./test_KiSGZyxu.spl:            int c = 1;
+./test_KiSGZyxu.spl:        } else if (b) {
+./test_KiSGZyxu.spl:            int d = a;
+./test_KiSGZyxu.spl:        }
+./test_KiSGZyxu.spl:        else {
+./test_KiSGZyxu.spl:            float c = 1.1;
+./test_KiSGZyxu.spl:        }
+./test_KiSGZyxu.spl:    }
+./test_KiSGZyxu.spl:    return 1;
+./test_lkvOCyd4.spl:struct a {
+./test_lkvOCyd4.spl:	int a;
+./test_lkvOCyd4.spl:	char b;
+./test_lkvOCyd4.spl:};
+./test_lkvOCyd4.spl:
+./test_lkvOCyd4.spl:int funA() {
+./test_lkvOCyd4.spl:	struct a a;
+./test_lkvOCyd4.spl:	return a;
+./test_lkvOCyd4.spl:}
+./test_lkvOCyd4.spl:
+./test_lkvOCyd4.spl:int funB() {
+./test_lkvOCyd4.spl:	int a;
+./test_lkvOCyd4.spl:	funA(a);
+./test_nHEZ9BCw.spl:int prime()
+./test_nHEZ9BCw.spl:{
+./test_nHEZ9BCw.spl:	  int i = 0,j,flag,n,res;
+./test_nHEZ9BCw.spl:	  n = 100;
+./test_nHEZ9BCw.spl:	  flag = 1;
+./test_nHEZ9BCw.spl:	  while (i <= 100)
+./test_nHEZ9BCw.spl:	  {
+./test_nHEZ9BCw.spl:        i = ii + 1;
+./test_nHEZ9BCw.spl:		flag = 1;
+./test_nHEZ9BCw.spl:        j = 2;
+./test_nHEZ9BCw.spl:        while (j * j <= i)
+./test_nHEZ9BCw.spl:		    {
+./test_nHEZ9BCw.spl:			      if (i / j == 0)
+./test_nHEZ9BCw.spl:			      {
+./test_nHEZ9BCw.spl:				        flag = 0;
+./test_nHEZ9BCw.spl:			      }
+./test_nHEZ9BCw.spl:		    }
+./test_nHEZ9BCw.spl:		    if (flag == 1)
+./test_nHEZ9BCw.spl:		        res = i;
+./test_nHEZ9BCw.spl:	  }
+./test_nHEZ9BCw.spl:	  prime2();
+./test_nHEZ9BCw.spl:    return i;
+./test_pCmS19rv.spl:int test_11812005_5(int x)
+./test_pCmS19rv.spl:{
+./test_pCmS19rv.spl:  int res = 0 * 1 + 2 - 3 / 4 && 5 || 6;
+./test_pCmS19rv.spl:  if (res == res || !(0 == res))
+./test_pCmS19rv.spl:  {
+./test_pCmS19rv.spl:    res = 1.1 * !(-(-(-res)));
+./test_pCmS19rv.spl:  }
+./test_pCmS19rv.spl:  else
+./test_pCmS19rv.spl:  {
+./test_pCmS19rv.spl:    if (!!!!!!!!!!!res && !0 || !1) {
+./test_pCmS19rv.spl:      res;
+./test_pCmS19rv.spl:    } 
+./test_pCmS19rv.spl:  }
+./test_pCmS19rv.spl:  return res;
+./test_pCmS19rv.spl:}
+./test_r5vjsa6Y.spl:int test_2_r03(int i, int m, int n)
+./test_r5vjsa6Y.spl:{
+./test_r5vjsa6Y.spl:  int a[5][4];
+./test_r5vjsa6Y.spl:  int b[5];
+./test_r5vjsa6Y.spl:  a[i][m]=4;
+./test_r5vjsa6Y.spl:  if(i>n){
+./test_r5vjsa6Y.spl:	return b[a[m]];
+./test_r5vjsa6Y.spl:  }
+./test_r5vjsa6Y.spl:  return b[a[i][m]];
+./test_SQzjh35g.spl:int g1[2][2];
+./test_SQzjh35g.spl:
+./test_SQzjh35g.spl:int test_11711906_5(int v1) {
+./test_SQzjh35g.spl:    float v2 = 1.0;
+./test_SQzjh35g.spl:    int v3 = v1[v2*g1[0][0]];
+./test_SQzjh35g.spl:    return v3;
+./test_TfoJBlCg.spl:float foo(int a, int b){
+./test_TfoJBlCg.spl:	if (a>0){
+./test_TfoJBlCg.spl:		return 1.0;
+./test_TfoJBlCg.spl:	}
+./test_TfoJBlCg.spl:	return 0.0;
+./test_TfoJBlCg.spl:}
+./test_TfoJBlCg.spl:
+./test_TfoJBlCg.spl:int test_2_r02()
+./test_TfoJBlCg.spl:{
+./test_TfoJBlCg.spl:  int a=0;
+./test_TfoJBlCg.spl:  int c;
+./test_TfoJBlCg.spl:  c=foo(a,10);
+./test_TfoJBlCg.spl:  if (a==0){
+./test_TfoJBlCg.spl:	return c;
+./test_TfoJBlCg.spl:  }
+./test_TfoJBlCg.spl:  return foo(c,a);
+./test_V7neapD0.spl:int add(int a,int b){
+./test_V7neapD0.spl:    return a+b;
+./test_V7neapD0.spl:}
+./test_V7neapD0.spl:int mul(int c,int d){
+./test_V7neapD0.spl:    return c*d;
+./test_V7neapD0.spl:}
+./test_V7neapD0.spl:int test_11712702_1()
+./test_V7neapD0.spl:{
+./test_V7neapD0.spl:  int i=0,j=0;
+./test_V7neapD0.spl:  i = mul(j,add(i,j));
+./test_V7neapD0.spl:  return i;
+./test_V7neapD0.spl:}
+./test_wBoxqOJQ.spl:int a;
+./test_wBoxqOJQ.spl:
+./test_wBoxqOJQ.spl:struct a {};
+./test_wBoxqOJQ.spl:
+./test_wBoxqOJQ.spl:int a() {}
+./test_wBoxqOJQ.spl:
+./test_wBoxqOJQ.spl:struct a {};
+./test_wBoxqOJQ.spl:
+./test_wBoxqOJQ.spl:int a() {}
+./test_wBoxqOJQ.spl:
+./test_WYuzBqsx.spl:int func () {
+./test_WYuzBqsx.spl:}
+./test_WYuzBqsx.spl:
+./test_WYuzBqsx.spl:int main () {
+./test_WYuzBqsx.spl:    func(1);
+./test_xkpDwGrq.spl:int func2(int p) {
+./test_xkpDwGrq.spl:    if (p == 0) {
+./test_xkpDwGrq.spl:        return 1;
+./test_xkpDwGrq.spl:    } else {
+./test_xkpDwGrq.spl:        return 2.0;     
+./test_xkpDwGrq.spl:    }
