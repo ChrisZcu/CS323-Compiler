@@ -5,8 +5,10 @@
     #include "syntax.tab.h"
     #ifndef AST_C
     #define AST_C
-    #include "ast.c"
+    #include "ast.cpp"
     #endif
+
+    extern "C" int yylex();
 
     int yycolumn = 1;
     extern int has_error;
@@ -56,7 +58,7 @@ LC \{
 RC \}
 %%
 {INT} {
-    yylval.ast = new_node("INT", strdup(yytext), yylineno);
+    yylval.ast = new_node("INT",  (yytext), yylineno);
     return INT;
 }
 {INT_WRONG} {
@@ -66,11 +68,11 @@ RC \}
     has_error = 1;
 }
 {FLOAT} { 
-    yylval.ast = new_node("FLOAT", strdup(yytext), yylineno);
+    yylval.ast = new_node("FLOAT",  (yytext), yylineno);
     return FLOAT;
 }
 {CHAR} {
-    yylval.ast = new_node("CHAR", strdup(yytext), yylineno);
+    yylval.ast = new_node("CHAR",  (yytext), yylineno);
     return CHAR;    
 }
 {CHAR_WRONG} {
@@ -79,36 +81,20 @@ RC \}
     has_lexical_error = 1;
     has_error = 1;
 }
+
+"int"|"float"|"char" { yylval.ast =new_node("TYPE", yytext, yylineno); return TYPE; }
+
+"struct"     { yylval.ast = new_node("STRUCT",  "", yylineno);return STRUCT; }
+"if"         {yylval.ast = new_node("IF",  "", yylineno);return IF;}
+"else"       { yylval.ast = new_node("ELSE",  "", yylineno);return ELSE;}
+"while"      { yylval.ast = new_node("WHILE",  "", yylineno);return WHILE; }
+"return"     { yylval.ast = new_node("RETURN",  "", yylineno);return RETURN; }
+"for"        {yylval.ast = new_node("FOR",  "", yylineno);return RETURN; }
+
+
 {ID} {
-    if (strcmp(yytext, "int") == 0 ||
-            strcmp(yytext, "float") == 0 ||
-            strcmp(yytext, "char") == 0) {
-        yylval.ast = new_node("TYPE", strdup(yytext), yylineno);
-        return TYPE;
-    }    
-    else if (strcmp(yytext, "struct") == 0) {
-        yylval.ast = new_node("STRUCT", NULL, yylineno);
-        return STRUCT;
-    }else if (strcmp(yytext, "if") == 0) {
-        yylval.ast = new_node("IF", NULL, yylineno);
-        return IF;
-    }
-    else if (strcmp(yytext, "else") == 0) {
-        yylval.ast = new_node("ELSE", NULL, yylineno);
-        return ELSE;
-    }
-    else if (strcmp(yytext, "while") == 0) {
-        yylval.ast = new_node("WHILE", NULL, yylineno);
-        return WHILE;
-    }
-    else if (strcmp(yytext, "return") == 0) {
-        yylval.ast = new_node("RETURN", NULL, yylineno);
-        return RETURN;
-    }
-    else {
-        yylval.ast = new_node("ID", strdup(yytext), yylineno);
-        return ID;
-    }
+    yylval.ast = new_node("ID",  (yytext), yylineno);
+    return ID;   
 }
 {ID_WRONG} {
     printf("Error type A at Line %d: Wrong Form \"%s\"\n", 
@@ -117,19 +103,19 @@ RC \}
     has_error = 1;
 }
 {DOT} {
-    yylval.ast = new_node("DOT", NULL, yylineno);
+    yylval.ast = new_node("DOT",  "", yylineno);
     return DOT;
 }
 {SEMI} { 
-    yylval.ast = new_node("SEMI", NULL, yylineno);
+    yylval.ast = new_node("SEMI",  "", yylineno);
     return SEMI;    
 }
 {COMMA} { 
-    yylval.ast = new_node("COMMA", NULL, yylineno);
+    yylval.ast = new_node("COMMA",  "", yylineno);
     return COMMA;
 }
 {ASSIGN} { 
-    yylval.ast = new_node("ASSIGN", NULL, yylineno);
+    yylval.ast = new_node("ASSIGN",  "", yylineno);
     return ASSIGN;
 }
 {LT} { 
@@ -157,70 +143,70 @@ RC \}
     return EQ;
 }
 {PLUS} { 
-    yylval.ast = new_node("PLUS", NULL, yylineno);
+    yylval.ast = new_node("PLUS",  "", yylineno);
     return PLUS;
 }
 {MINUS} { 
-    yylval.ast = new_node("MINUS", NULL, yylineno);
+    yylval.ast = new_node("MINUS",  "", yylineno);
     return MINUS;    
 }
 {MUL} { 
-    yylval.ast = new_node("MUL", NULL, yylineno);
+    yylval.ast = new_node("MUL",  "", yylineno);
     return MUL;    
 }
 {DIV} { 
-    yylval.ast = new_node("DIV", NULL, yylineno);
+    yylval.ast = new_node("DIV",  "", yylineno);
     return DIV;
 }
 {AND} { 
-    yylval.ast = new_node("AND", NULL, yylineno);
+    yylval.ast = new_node("AND",  "", yylineno);
     return AND;
 }
 {OR} { 
-    yylval.ast = new_node("OR", NULL, yylineno);
+    yylval.ast = new_node("OR",  "", yylineno);
     return OR;
 }
 {NOT} { 
-    yylval.ast = new_node("NOT", NULL, yylineno);
+    yylval.ast = new_node("NOT",  "", yylineno);
     return NOT;
 }
 {LP} { 
-    yylval.ast = new_node("LP", NULL, yylineno);
+    yylval.ast = new_node("LP",  "", yylineno);
     return LP;
 }
 {RP} { 
-    yylval.ast = new_node("RP", NULL, yylineno);
+    yylval.ast = new_node("RP",  "", yylineno);
     return RP;
 }
 {LB} { 
-    yylval.ast = new_node("LB", NULL, yylineno);
+    yylval.ast = new_node("LB",  "", yylineno);
     return LB;
 }
 {RB} { 
-    yylval.ast = new_node("RB", NULL, yylineno);
+    yylval.ast = new_node("RB",  "", yylineno);
     return RB;
 }
 {LC} { 
-    yylval.ast = new_node("LC", NULL, yylineno);
+    yylval.ast = new_node("LC",  "", yylineno);
     return LC;
 }
 {RC} { 
-    yylval.ast = new_node("RC", NULL, yylineno);
+    yylval.ast = new_node("RC",  "", yylineno);
     return RC;
 }
 [ \r\t] {}
 [\n] {has_lexical_error = 0;}
-"//" { char c; while((c=input()) != '\n'); }
+"//" { char c; while((c=yyinput()) != '\n'); }
 "/*" {
     char c; 
     while(1) {
-        if((c=input()) == '*') {
-            if((c=input()) == '/') {
+        if((c=yyinput()) == '*') {
+            if((c=yyinput()) == '/') {
                 break;
             } else {unput(c);}
         }
-        if((c=input()) == '/') {
-            if((c=input()) == '*') {
+        if((c=yyinput()) == '/') {
+            if((c=yyinput()) == '*') {
                 printf ("Error type B at Line %d: Nested multi-line comments", yylineno);   
                 has_error = 1;
             }    

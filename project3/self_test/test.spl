@@ -1,0 +1,7 @@
+int main(){
+    int b = 1;
+    int c;
+    int d= a + b;
+    int ary[3][4];
+    ary[1][2]=a;
+}

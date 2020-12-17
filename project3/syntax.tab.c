@@ -71,7 +71,7 @@
 
     #ifndef AST_C
     #define AST_C
-    #include "ast.c"
+    #include "ast.cpp"
     #endif
 
     extern FILE *yyin;
@@ -105,7 +105,7 @@
 # define YY_YY_SYNTAX_TAB_H_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
-# define YYDEBUG 0
+# define YYDEBUG 1
 #endif
 #if YYDEBUG
 extern int yydebug;
@@ -1502,7 +1502,7 @@ yyreduce:
   case 4:
 #line 50 "syntax.y" /* yacc.c:1646  */
     {
-        (yyval.ast) = new_ast(NULL, 0);
+        (yyval.ast) = new_ast( "", 0);
     }
 #line 1508 "syntax.tab.c" /* yacc.c:1646  */
     break;
@@ -1654,14 +1654,14 @@ yyreduce:
   case 23:
 #line 123 "syntax.y" /* yacc.c:1646  */
     {
-        (yyval.ast) = new_ast(NULL, 0);
+        (yyval.ast) = new_ast( "", 0);
     }
 #line 1660 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 24:
 #line 127 "syntax.y" /* yacc.c:1646  */
-    { //if else 
+    { //赋值
         (yyval.ast) = new_ast("Stmt", 2, (yyvsp[-1].ast), (yyvsp[0].ast));
     }
 #line 1668 "syntax.tab.c" /* yacc.c:1646  */
@@ -1718,7 +1718,7 @@ yyreduce:
   case 31:
 #line 150 "syntax.y" /* yacc.c:1646  */
     {
-       (yyval.ast) = new_ast(NULL, 0);
+       (yyval.ast) = new_ast( "", 0);
     }
 #line 1724 "syntax.tab.c" /* yacc.c:1646  */
     break;
@@ -2178,7 +2178,6 @@ Dec: VarDec ASSIGN error
 */
 void yyerror(const char *s){
     has_error = 1;
-    
     if (!has_lexical_error) {
         fprintf(stderr, "Error type B at line %d: %s\n", yylineno, s);
     }

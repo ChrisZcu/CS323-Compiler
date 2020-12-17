@@ -6,7 +6,7 @@
 
     #ifndef AST_C
     #define AST_C
-    #include "ast.c"
+    #include "ast.cpp"
     #endif
 
     extern FILE *yyin;
@@ -48,7 +48,7 @@ ExtDefList: ExtDef ExtDefList {
         $$ = new_ast("ExtDefList", 2, $1, $2);
     }
     | %empty {
-        $$ = new_ast(NULL, 0);
+        $$ = new_ast( "", 0);
     }
     ;
 ExtDef: Specifier ExtDecList SEMI {
@@ -121,10 +121,10 @@ StmtList: Stmt StmtList {
         $$ = new_ast("StmtList", 2, $1, $2);
     } 
     | %empty {
-        $$ = new_ast(NULL, 0);
+        $$ = new_ast( "", 0);
     }
     ;
-Stmt: Exp SEMI { //if else 
+Stmt: Exp SEMI { //赋值
         $$ = new_ast("Stmt", 2, $1, $2);
     }
     | CompSt {
@@ -148,7 +148,7 @@ DefList: Def DefList {//TODO variable defination
        $$ = new_ast("DefList", 2, $1, $2);
     }
     | %empty {
-       $$ = new_ast(NULL, 0);
+       $$ = new_ast( "", 0);
     }
     ;
 
@@ -221,7 +221,6 @@ Dec: VarDec ASSIGN error
 */
 void yyerror(const char *s){
     has_error = 1;
-    
     if (!has_lexical_error) {
         fprintf(stderr, "Error type B at line %d: %s\n", yylineno, s);
     }
