@@ -1,0 +1,60 @@
+[DEBUG] 2020-12-18 23:47:27,697 (irsim.py 620): Parsed arguments: {'irpath': 'self_test/parse_tree.ir', 'inputs': '', 'logpath': 'irsim.log'}
+[ERROR] 2020-12-18 23:47:27,698 (irsim.py 581): Syntax error at line 17:
+t17 := 1
+[ERROR] 2020-12-18 23:47:27,698 (irsim.py 581): Cannot find program entrance. Please make sure the 'main' function does exist
+[DEBUG] 2020-12-18 23:47:45,070 (irsim.py 620): Parsed arguments: {'irpath': 'self_test/parse_tree.ir', 'inputs': '', 'logpath': 'irsim.log'}
+[ERROR] 2020-12-18 23:47:45,071 (irsim.py 581): Syntax error at line 17:
+t17 := 1
+[ERROR] 2020-12-18 23:47:45,072 (irsim.py 581): Cannot find program entrance. Please make sure the 'main' function does exist
+[DEBUG] 2020-12-18 23:50:18,720 (irsim.py 620): Parsed arguments: {'irpath': 'self_test/parse_tree.ir', 'inputs': '', 'logpath': 'irsim.log'}
+[ERROR] 2020-12-18 23:50:18,721 (irsim.py 581): Syntax error at line 5:
+t4 := 0
+[INFO] 2020-12-18 23:50:18,722 (irsim.py 567): File loaded successfully
+[DEBUG] 2020-12-18 23:50:59,533 (irsim.py 620): Parsed arguments: {'irpath': 'self_test/parse_tree.ir', 'inputs': '', 'logpath': 'irsim.log'}
+[ERROR] 2020-12-18 23:50:59,534 (irsim.py 581): Syntax error at line 5:
+t4 := 0
+[INFO] 2020-12-18 23:50:59,535 (irsim.py 567): File loaded successfully
+[DEBUG] 2020-12-18 23:55:31,012 (irsim.py 620): Parsed arguments: {'irpath': 'self_test/parse_tree.ir', 'inputs': '', 'logpath': 'irsim.log'}
+[INFO] 2020-12-18 23:55:31,013 (irsim.py 567): File loaded successfully
+[INFO] 2020-12-18 23:55:33,522 (irsim.py 567): Program has exited gracefully
+[INFO] 2020-12-18 23:55:33,523 (irsim.py 567): Total instructions = 43
+[WARNING] 2020-12-18 23:55:36,115 (irsim.py 574): Program Counter goes out of bound. The running program will be terminated instantly
+[WARNING] 2020-12-18 23:55:40,378 (irsim.py 574): Program Counter goes out of bound. The running program will be terminated instantly
+[INFO] 2020-12-18 23:55:51,632 (irsim.py 567): KeyboardInterrupt raised, quit program
+[DEBUG] 2020-12-18 23:56:09,319 (irsim.py 620): Parsed arguments: {'irpath': 'self_test/parse_tree.ir', 'inputs': '', 'logpath': 'irsim.log'}
+[ERROR] 2020-12-18 23:56:09,320 (irsim.py 581): Syntax error at line 22:
+LABEL label1
+[ERROR] 2020-12-18 23:56:09,321 (irsim.py 581): Cannot find program entrance. Please make sure the 'main' function does exist
+[DEBUG] 2020-12-18 23:56:39,998 (irsim.py 620): Parsed arguments: {'irpath': 'self_test/parse_tree.ir', 'inputs': '', 'logpath': 'irsim.log'}
+[INFO] 2020-12-18 23:56:40,000 (irsim.py 567): File loaded successfully
+[INFO] 2020-12-18 23:56:42,146 (irsim.py 567): Program has exited gracefully
+[INFO] 2020-12-18 23:56:42,147 (irsim.py 567): Total instructions = 43
+[INFO] 2020-12-18 23:59:41,837 (irsim.py 567): KeyboardInterrupt raised, quit program
+[DEBUG] 2020-12-19 00:01:17,599 (irsim.py 620): Parsed arguments: {'irpath': 'self_test/parse_tree.ir', 'inputs': '', 'logpath': 'irsim.log'}
+[ERROR] 2020-12-19 00:01:17,600 (irsim.py 581): Syntax error at line 16:
+LABEL label1
+[ERROR] 2020-12-19 00:01:17,601 (irsim.py 581): Undefined label at line 14: IF t5 == t6 GOTO label1
+[ERROR] 2020-12-19 00:01:17,602 (irsim.py 581): Loading failed
+[DEBUG] 2020-12-19 00:08:18,757 (irsim.py 620): Parsed arguments: {'irpath': 'self_test/parse_tree.ir', 'inputs': '10,10', 'logpath': 'irsim.log'}
+[ERROR] 2020-12-19 00:08:18,758 (irsim.py 581): Syntax error at line 16:
+LABEL label1
+[ERROR] 2020-12-19 00:08:18,758 (irsim.py 581): Undefined label at line 14: IF t5 == t6 GOTO label1
+[ERROR] 2020-12-19 00:08:18,759 (irsim.py 581): Loading failed
+[DEBUG] 2020-12-19 00:13:17,918 (irsim.py 620): Parsed arguments: {'irpath': 'self_test/parse_tree.ir', 'inputs': '10,10', 'logpath': 'irsim.log'}
+[INFO] 2020-12-19 00:13:17,920 (irsim.py 567): File loaded successfully
+[INFO] 2020-12-19 00:13:20,351 (irsim.py 567): Program has exited gracefully
+[INFO] 2020-12-19 00:13:20,352 (irsim.py 567): Total instructions = 42
+[INFO] 2020-12-19 00:13:22,413 (irsim.py 567): KeyboardInterrupt raised, quit program
+[DEBUG] 2020-12-19 00:13:34,032 (irsim.py 620): Parsed arguments: {'irpath': 'self_test/parse_tree.ir', 'inputs': '', 'logpath': 'irsim.log'}
+[INFO] 2020-12-19 00:13:34,034 (irsim.py 567): File loaded successfully
+[INFO] 2020-12-19 00:16:02,938 (irsim.py 567): Program has exited gracefully
+[INFO] 2020-12-19 00:16:02,938 (irsim.py 567): Total instructions = 111827
+[INFO] 2020-12-19 00:17:44,934 (irsim.py 567): KeyboardInterrupt raised, quit program
+[DEBUG] 2020-12-20 17:47:04,043 (irsim.py 620): Parsed arguments: {'irpath': 'self_test/parse_tree.ir', 'inputs': '', 'logpath': 'irsim.log'}
+[INFO] 2020-12-20 17:47:04,046 (irsim.py 567): File loaded successfully
+[INFO] 2020-12-20 17:49:30,227 (irsim.py 567): Program has exited gracefully
+[INFO] 2020-12-20 17:49:30,228 (irsim.py 567): Total instructions = 111827
+[INFO] 2020-12-20 17:51:16,456 (irsim.py 567): KeyboardInterrupt raised, quit program
+[DEBUG] 2020-12-20 17:59:16,861 (irsim.py 620): Parsed arguments: {'irpath': 'self_test/parse_tree.ir', 'inputs': '', 'logpath': 'irsim.log'}
+[INFO] 2020-12-20 17:59:16,862 (irsim.py 567): File loaded successfully
+[INFO] 2020-12-20 17:59:18,040 (irsim.py 567): KeyboardInterrupt raised, quit program

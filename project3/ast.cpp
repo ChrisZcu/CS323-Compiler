@@ -125,7 +125,7 @@ void func_args(struct ast *var_list, vector<val_d> &args)
         struct ast *param_dec = _tmp_head->next_layer;
         string type = get_specifier_type(param_dec->next_layer);
         struct ast *var_dec = param_dec->next_layer->next_neighbor;
- 
+
         val_d val = get_val(type, var_dec);
         args.emplace_back(val);
         symbol.val.emplace_back(val);
@@ -253,6 +253,7 @@ val_d get_val(string type, struct ast *ast)
 {
     int i;
     i = 0;
+    vector<int> dim_num;
     string name;
     if (ast->next_layer->name == "ID")
     {
@@ -264,6 +265,8 @@ val_d get_val(string type, struct ast *ast)
         while ((tmp_var_dec->next_layer->name == "VarDec"))
         {
             i++;
+            string dim = tmp_var_dec->next_layer->next_neighbor->next_neighbor->value;
+            dim_num.emplace_back(stoi(dim));
             tmp_var_dec = tmp_var_dec->next_layer;
         }
         name = tmp_var_dec->next_layer->value;
@@ -272,6 +275,11 @@ val_d get_val(string type, struct ast *ast)
     val_d val;
     val.type = type;
     val.dim = i;
+    for (int i = dim_num.size() - 1; i > -1; i--)
+    {
+        val.dim_num.emplace_back(dim_num[i]);
+    }
+
     val.name = name;
     return val;
 }
@@ -335,6 +343,11 @@ void print_code()
 {
     for (int i = 0; i < code.size(); i++)
     {
+        if (code[i].code_list.size() == 0)
+        {
+            continue;
+        }
+
         for (string e : code[i].code_list)
         {
             cout << e << " ";
@@ -349,7 +362,6 @@ void semantic(struct ast *ast, int level)
     gen_symbol_table(ast, level);
     ir_translate(ast);
     print_code();
-
     // print_symbol();
     // parsetree(ast, level);
 }

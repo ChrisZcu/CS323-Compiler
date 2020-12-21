@@ -6,12 +6,13 @@ using namespace std;
 typedef struct val_d
 {
     string name;
-    string type; //int,float,char,struct(the name itself)
-    int dim = 0; //ary used
-    int value;   //int used
+    string type;         //int,float,char,struct(the name itself)
+    int dim = 0;         //ary used
+    vector<int> dim_num; //ary used
+    int value;           //int used
 
     vector<val_d> struct_field; //struct field used
-    string ir_name;             //ir code used
+    string ir_name="no_ir";        //ir code used
 } val_d;
 
 typedef struct func_d

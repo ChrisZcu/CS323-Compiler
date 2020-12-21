@@ -215,7 +215,6 @@ void parsetree(struct ast *ast, int level)
                 //local variable
                 if (!strcmp(ast->name, "DefList"))
                 {
-
                     local_charge(ast);
                 }
                 if (!strcmp(ast->name, "Exp"))

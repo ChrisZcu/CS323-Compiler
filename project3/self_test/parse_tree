@@ -1,11 +1,5 @@
 int main(int a, struct str s){
-    int b = 1;
-    int c;
-    int dd = -1;
-    int d= a + b;
-    int e = 5;
-    int ary[3][4];
-    ary[1][2]=a; 
-    e=main(b,s);
-    return 0;
+    int a,b;
+    a = 10;
+    b = a*a+1;
 }
