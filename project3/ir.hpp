@@ -49,4 +49,5 @@ void function_init(struct ast *fun_dec);
 void function_def_list(struct ast *def_list);
 void function_stmt_list(struct ast *stmt_list);
 pair<bool, string> get_exp_number(struct ast *exp);
-void exp_opt(struct ast*exp, string&t);
+void exp_opt(struct ast *exp, string &t);
+void array_handle(struct ast *exp, string &final_addr);

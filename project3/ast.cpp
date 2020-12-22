@@ -129,6 +129,7 @@ void func_args(struct ast *var_list, vector<val_d> &args)
         struct ast *var_dec = param_dec->next_layer->next_neighbor;
 
         val_d val = get_val(type, var_dec);
+        val.is_func_args = true;
         args.emplace_back(val);
         symbol.val.emplace_back(val);
         if (param_dec->next_neighbor != NULL)

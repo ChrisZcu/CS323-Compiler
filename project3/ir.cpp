@@ -33,6 +33,13 @@ void exp_opt(struct ast *exp, string &t)
         string name = exp->next_layer->value;
         val_d *val = val_find(name);
         t = val->ir_name;
+        if (val->dim > 0)
+        { //array
+            if (!val->is_func_args)
+            {
+                t = "&" + t;
+            }
+        }
     }
     else if (exp->next_layer->name == "INT")
     {
@@ -45,6 +52,120 @@ void exp_opt(struct ast *exp, string &t)
         code.emplace_back(_code_2);
     }
 }
+
+void array_handle(struct ast *exp, string &final_addr)
+{
+
+    struct ast *tmp_exp = exp->next_layer;
+    vector<string> ary_dim;
+    int dim = 0;
+    while (tmp_exp->name != "ID")
+    {
+        dim++;
+        string _t;
+        exp_opt(tmp_exp->next_neighbor->next_neighbor, _t);
+        // new_temp(_t);
+        // code.emplace_back(translate_exp(tmp_exp->next_neighbor->next_neighbor, _t));
+        ary_dim.emplace_back(_t);
+        tmp_exp = tmp_exp->next_layer;
+    }
+
+    string ary_name = tmp_exp->value;
+    val_d *ary_val = val_find(ary_name);
+    tmp_exp = exp->next_layer->next_layer;
+    string off = ary_val->ir_name;
+    if (!ary_val->is_func_args)
+    {
+        off = "&" + off;
+    }
+
+    if (ary_dim.size() == ary_val->dim_num.size())
+    { //full
+        for (int i = 0; i < ary_dim.size() - 1; i++)
+        {
+            string index_ir = ary_dim[ary_dim.size() - i - 1];
+            int mul_dim = ary_val->dim_num[i + 1];
+            for (int j = i + 2; j < ary_val->dim; j++)
+            {
+                mul_dim *= ary_val->dim_num[j];
+            }
+            mul_dim *= 4;
+            string _t;
+            new_temp(_t);
+            code_node _code;
+            _code.code_list.emplace_back(_t);
+            _code.code_list.emplace_back(":=");
+            _code.code_list.emplace_back(index_ir);
+            _code.code_list.emplace_back("*");
+            _code.code_list.emplace_back(to_string(mul_dim));
+            code.emplace_back(_code);
+
+            string _tmp_addr;
+            new_temp(_tmp_addr);
+            code_node _code_2;
+            _code_2.code_list.emplace_back(_tmp_addr);
+            _code_2.code_list.emplace_back(":=");
+            _code_2.code_list.emplace_back(off);
+            _code_2.code_list.emplace_back("+");
+            _code_2.code_list.emplace_back(_t);
+            code.emplace_back(_code_2);
+            off = _tmp_addr;
+        }
+        string _last_index;
+        new_temp(_last_index);
+        code_node _code_4;
+        _code_4.code_list.emplace_back(_last_index);
+        _code_4.code_list.emplace_back(":=");
+        _code_4.code_list.emplace_back(ary_dim[0]);
+        _code_4.code_list.emplace_back("*");
+        _code_4.code_list.emplace_back("#4");
+        code.emplace_back(_code_4);
+
+        new_temp(final_addr);
+        code_node _code_3;
+        _code_3.code_list.emplace_back(final_addr);
+        _code_3.code_list.emplace_back(":=");
+        _code_3.code_list.emplace_back(off);
+        _code_3.code_list.emplace_back("+");
+        _code_3.code_list.emplace_back(_last_index);
+        code.emplace_back(_code_3);
+    }
+    else
+    { //not full
+        for (int i = 0; i < ary_dim.size(); i++)
+        {
+            string index_ir = ary_dim[ary_dim.size() - i - 1];
+            int mul_dim = ary_val->dim_num[i + 1];
+            for (int j = i + 2; j < ary_val->dim; j++)
+            {
+                mul_dim *= ary_val->dim_num[j];
+            }
+            mul_dim *= 4;
+            string _t;
+            new_temp(_t);
+            code_node _code;
+            _code.code_list.emplace_back(_t);
+            _code.code_list.emplace_back(":=");
+            _code.code_list.emplace_back(index_ir);
+            _code.code_list.emplace_back("*");
+            _code.code_list.emplace_back(to_string(mul_dim));
+            code.emplace_back(_code);
+
+            string _tmp_addr;
+            new_temp(_tmp_addr);
+            code_node _code_2;
+            _code_2.code_list.emplace_back(_tmp_addr);
+            _code_2.code_list.emplace_back(":=");
+            _code_2.code_list.emplace_back(off);
+            _code_2.code_list.emplace_back("+");
+            _code_2.code_list.emplace_back(_t);
+            code.emplace_back(_code_2);
+            off = _tmp_addr;
+        }
+        final_addr = off;
+    }
+}
+
 code_node translate_exp(struct ast *exp, string place)
 {
 
@@ -79,114 +200,12 @@ code_node translate_exp(struct ast *exp, string place)
         else
         { //array, a[1][2][3] = ...
             string _t1;
-            new_temp(_t1);
-            code_node _code_1 = translate_exp(exp->next_layer->next_neighbor->next_neighbor, _t1);
-            code.emplace_back(_code_1);
-
-            struct ast *tmp_exp = exp->next_layer->next_layer;
-            vector<string> ary_dim;
-            int dim = 0;
-            while (tmp_exp->name != "ID")
-            {
-                dim++;
-                string _t;
-                new_temp(_t);
-                code.emplace_back(translate_exp(tmp_exp->next_neighbor->next_neighbor, _t));
-                ary_dim.emplace_back(_t);
-                tmp_exp = tmp_exp->next_layer;
-            }
-
-            string ary_name = tmp_exp->value;
-            val_d *ary_val = val_find(ary_name);
-            tmp_exp = exp->next_layer->next_layer;
-            string off = "&" + ary_val->ir_name;
+            exp_opt(exp->next_layer->next_neighbor->next_neighbor, _t1);
+            // new_temp(_t1);
+            // code_node _code_1 = translate_exp(exp->next_layer->next_neighbor->next_neighbor, _t1);
+            // code.emplace_back(_code_1);
             string final_addr;
-            if (ary_dim.size() == ary_val->dim_num.size())
-            { //full
-                for (int i = 0; i < ary_dim.size() - 1; i++)
-                {
-                    string index_ir = ary_dim[ary_dim.size() - i - 1];
-                    int mul_dim = ary_val->dim_num[i + 1];
-                    for (int j = i + 2; j < ary_val->dim; j++)
-                    {
-                        mul_dim *= ary_val->dim_num[j];
-                    }
-                    mul_dim *= 4;
-                    string _t;
-                    new_temp(_t);
-                    code_node _code;
-                    _code.code_list.emplace_back(_t);
-                    _code.code_list.emplace_back(":=");
-                    _code.code_list.emplace_back(index_ir);
-                    _code.code_list.emplace_back("*");
-                    _code.code_list.emplace_back(to_string(mul_dim));
-                    code.emplace_back(_code);
-
-                    string _tmp_addr;
-                    new_temp(_tmp_addr);
-                    code_node _code_2;
-                    _code_2.code_list.emplace_back(_tmp_addr);
-                    _code_2.code_list.emplace_back(":=");
-                    _code_2.code_list.emplace_back(off);
-                    _code_2.code_list.emplace_back("+");
-                    _code_2.code_list.emplace_back(_t);
-                    code.emplace_back(_code_2);
-                    off = _tmp_addr;
-                }
-                string _last_index;
-                new_temp(_last_index);
-                code_node _code_4;
-                _code_4.code_list.emplace_back(_last_index);
-                _code_4.code_list.emplace_back(":=");
-                _code_4.code_list.emplace_back(ary_dim[0]);
-                _code_4.code_list.emplace_back("*");
-                _code_4.code_list.emplace_back("4");
-                code.emplace_back(_code_4);
-
-                new_temp(final_addr);
-                code_node _code_3;
-                _code_3.code_list.emplace_back(final_addr);
-                _code_3.code_list.emplace_back(":=");
-                _code_3.code_list.emplace_back(off);
-                _code_3.code_list.emplace_back("+");
-                _code_3.code_list.emplace_back(_last_index);
-                code.emplace_back(_code_3);
-            }
-            else
-            { //not full
-                for (int i = 0; i < ary_dim.size(); i++)
-                {
-                    string index_ir = ary_dim[ary_dim.size() - i - 1];
-                    int mul_dim = ary_val->dim_num[i + 1];
-                    for (int j = i + 2; j < ary_val->dim; j++)
-                    {
-                        mul_dim *= ary_val->dim_num[j];
-                    }
-                    mul_dim *= 4;
-                    string _t;
-                    new_temp(_t);
-                    code_node _code;
-                    _code.code_list.emplace_back(_t);
-                    _code.code_list.emplace_back(":=");
-                    _code.code_list.emplace_back(index_ir);
-                    _code.code_list.emplace_back("*");
-                    _code.code_list.emplace_back(to_string(mul_dim));
-                    code.emplace_back(_code);
-
-                    string _tmp_addr;
-                    new_temp(_tmp_addr);
-                    code_node _code_2;
-                    _code_2.code_list.emplace_back(_tmp_addr);
-                    _code_2.code_list.emplace_back(":=");
-                    _code_2.code_list.emplace_back(off);
-                    _code_2.code_list.emplace_back("+");
-                    _code_2.code_list.emplace_back(_t);
-                    code.emplace_back(_code_2);
-                    off = _tmp_addr;
-                }
-                final_addr = off;
-            }
-
+            array_handle(exp->next_layer, final_addr);
             res.code_list.emplace_back("*" + final_addr);
             res.code_list.emplace_back(":=");
             res.code_list.emplace_back(_t1);
@@ -280,7 +299,6 @@ code_node translate_exp(struct ast *exp, string place)
     }
     else if (exp->next_layer->name == "ID")
     { //function
-
         if (exp->next_layer->next_neighbor->next_neighbor->name == "RP")
         {
 
@@ -303,7 +321,6 @@ code_node translate_exp(struct ast *exp, string place)
         }
         else
         {
-
             vector<string> arg_list;
             translate_args(exp->next_layer->next_neighbor->next_neighbor, arg_list);
 
@@ -331,6 +348,15 @@ code_node translate_exp(struct ast *exp, string place)
                 res.code_list.emplace_back(exp->next_layer->value);
             }
         }
+    }
+    else if (exp->next_layer->next_neighbor->name == "LB")
+    { //array
+        /* code */
+        string final_addr;
+        array_handle(exp, final_addr);
+        res.code_list.emplace_back(place);
+        res.code_list.emplace_back(":=");
+        res.code_list.emplace_back("*" + final_addr);
     }
 
     return res;
@@ -608,13 +634,20 @@ void function_def_list(struct ast *def_list)
             { //int a[][]
                 string name;
                 new_temp(name);
+                string _name = get_var_dec_name(var_dec);
+                val_d *val = val_find(_name);
+                int size = 4;
+                for (int i = 0; i < val->dim; i++)
+                {
+                    size *= val->dim_num[i];
+                }
+
                 code_node _code;
                 _code.code_list.emplace_back("DEC");
                 _code.code_list.emplace_back(name);
-                _code.code_list.emplace_back(to_string(8));
+                _code.code_list.emplace_back(to_string(size));
                 code.emplace_back(_code);
-                string _name = get_var_dec_name(var_dec);
-                val_d *val = val_find(_name);
+
                 val->ir_name = name;
             }
             else if (var_dec->next_neighbor != NULL)
