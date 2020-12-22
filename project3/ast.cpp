@@ -50,9 +50,11 @@ struct ast *new_ast(string name, int num, ...)
 
 struct ast *new_node(string name, string value, int lineno)
 {
-
     struct ast *node = (struct ast *)malloc(sizeof(struct ast));
+    memset(node, '\0', sizeof(ast));
+
     node->name = name;
+
     if (!value.empty())
     {
         node->value = value;
@@ -146,7 +148,6 @@ void func_struct_insert(struct ast *ast)
 
     if (specifier->next_neighbor->name == "FunDec") //function
     {
-
         func_d func;
         func.return_type = specifier->next_layer->value;
         if (specifier->next_neighbor->next_layer->next_neighbor->next_neighbor->name != "RP") //args
@@ -203,10 +204,10 @@ void local_variable_insert(struct ast *ast, vector<val_d> &val_vec)
         dec_list_charge(type, specifier->next_neighbor, val_vec);
     }
 
-    if (def->next_neighbor != NULL)
-    {
-        local_variable_insert(def->next_neighbor, val_vec);
-    }
+    // if (def->next_neighbor != NULL)
+    // {
+    //     local_variable_insert(def->next_neighbor, val_vec);
+    // }
     // ast->next_layer = NULL;
 }
 
@@ -307,14 +308,15 @@ void gen_symbol_table(struct ast *ast, int level)
                 {
                     local_variable_insert(ast, symbol.val);
                 }
+                else if (ast->name == "Exp")
+                {
+                    exp_cut(ast);
+                }
             }
         }
 
         struct ast *son = ast->next_layer;
-        if (ast->name == "DefList")
-        {
-            son = NULL;
-        }
+
         while (son != NULL)
         {
             gen_symbol_table(son, level + 1);
@@ -354,6 +356,95 @@ void print_code()
         }
         cout << endl;
     }
+}
+
+bool exp_cut(struct ast *exp)
+{
+
+    if (exp->next_layer->name == "Exp")
+    {
+        if (exp->next_layer->next_neighbor->name == "PLUS" ||
+            exp->next_layer->next_neighbor->name == "MINUS" ||
+            exp->next_layer->next_neighbor->name == "MUL" ||
+            exp->next_layer->next_neighbor->name == "DIV")
+        {
+            struct ast *exp1 = exp->next_layer;
+            struct ast *exp2 = exp1->next_neighbor->next_neighbor;
+            bool if_num_1 = exp_cut(exp1);
+
+            // if (exp2->next_layer->name == "ID")
+            // {
+            //     cout << exp1->next_layer->value << endl;
+            //     parsetree(exp, 0);
+            //     cout<<endl;
+            // }
+            bool if_num_2 = exp_cut(exp2);
+            if (if_num_1 && if_num_2)
+            {
+                string value;
+                if (exp1->next_neighbor->name == "PLUS")
+                {
+                    value = to_string(stoi(exp1->next_layer->value) + stoi(exp2->next_layer->value));
+                }
+                else if (exp1->next_neighbor->name == "MINUS")
+                {
+
+                    value = to_string(stoi(exp1->next_layer->value) - stoi(exp2->next_layer->value));
+                }
+                else if (exp1->next_neighbor->name == "MUL")
+                {
+
+                    value = to_string(stoi(exp1->next_layer->value) * stoi(exp2->next_layer->value));
+                }
+                else
+                {
+                    value = to_string(stoi(exp1->next_layer->value) / stoi(exp2->next_layer->value));
+                }
+                string name = "INT";
+                struct ast *exp_tmp = new_node(name, value, exp->lineno);
+                exp->next_layer = exp_tmp;
+                // cout << exp->next_layer->value << ", " << exp->next_neighbor->next_neighbor->next_layer->value << endl;
+                return true;
+            }
+            else
+            {
+                if (if_num_1) //prefix
+                {
+                    if (exp->next_layer->next_layer->value == "0" && exp->next_layer->next_neighbor->name == "PLUS" || //0+
+                        exp->next_layer->next_layer->value == "1" && exp->next_layer->next_neighbor->name == "MUL"     //1*
+                    )
+                    {
+                        /* code */
+                        exp->next_layer = exp->next_layer->next_neighbor->next_neighbor->next_layer;
+                    }
+                }
+                else if (if_num_2)
+                {
+                    if (exp->next_layer->next_neighbor->next_neighbor->next_layer->value == "0" && exp->next_layer->next_neighbor->name == "PLUS" || //+/-0
+                        exp->next_layer->next_neighbor->next_neighbor->next_layer->value == "0" && exp->next_layer->next_neighbor->name == "MINUS" ||
+                        exp->next_layer->next_neighbor->next_neighbor->next_layer->value == "1" && exp->next_layer->next_neighbor->name == "MUL" ||
+                        exp->next_layer->next_neighbor->next_neighbor->next_layer->value == "1" && exp->next_layer->next_neighbor->name == "DIV")
+                    {
+                        /* code */
+                        exp->next_layer=exp->next_layer->next_layer;
+                     
+                    }
+                }
+
+                return false;
+            }
+        }
+    }
+    else if (exp->next_layer->name == "INT" ||
+             exp->next_layer->name == "FLOAT" ||
+             exp->next_layer->name == "CHAR")
+    {
+        return true;
+    }
+    // parsetree(exp, 0);
+    // cout << endl;
+
+    return false;
 }
 
 void semantic(struct ast *ast, int level)

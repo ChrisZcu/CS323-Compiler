@@ -26,10 +26,28 @@ void new_temp(string &name)
     name = "t" + temp_num;
 }
 
+void exp_opt(struct ast *exp, string &t)
+{
+    if (exp->next_layer->name == "ID" && exp->next_layer->next_neighbor == NULL)
+    {
+        string name = exp->next_layer->value;
+        val_d *val = val_find(name);
+        t = val->ir_name;
+    }
+    else if (exp->next_layer->name == "INT")
+    {
+        t = "#" + exp->next_layer->value;
+    }
+    else
+    {
+        new_temp(t);
+        code_node _code_2 = translate_exp(exp, t);
+        code.emplace_back(_code_2);
+    }
+}
 code_node translate_exp(struct ast *exp, string place)
 {
 
-    // print_code();
     if (exp->next_layer->name == "LP")
     {
         return translate_exp(exp->next_layer->next_neighbor, place);
@@ -51,31 +69,20 @@ code_node translate_exp(struct ast *exp, string place)
     }
     else if (exp->next_layer->next_neighbor->name == "ASSIGN") //局部变量调用才有，传入place为irname
     {
-        string _t1;
-        new_temp(_t1);
-        code_node _code_1 = translate_exp(exp->next_layer->next_neighbor->next_neighbor, _t1);
-        code.emplace_back(_code_1);
         if (exp->next_layer->next_layer->name == "ID")
         { //a =..
-            // cout << exp->next_layer->next_layer->value << exp->lineno << endl;
-            //TODO modify the value
-
-            // code_node _code_2;
-            // _code_2.code_list.emplace_back(exp->next_layer->next_layer->value);
-            // _code_2.code_list.emplace_back(":=");
-            // _code_2.code_list.emplace_back(_t1);
-            // code.emplace_back(_code_2);
-
-            res.code_list.emplace_back(place);
-            res.code_list.emplace_back(":=");
-            // res.code_list.emplace_back(exp->next_layer->next_layer->value);
-            res.code_list.emplace_back(_t1);
+            res = translate_exp(exp->next_layer->next_neighbor->next_neighbor, place);
         }
         else if (exp->next_layer->next_layer->next_neighbor->name == "DOT")
         { //a.s=
         }
         else
         { //array, a[1][2][3] = ...
+            string _t1;
+            new_temp(_t1);
+            code_node _code_1 = translate_exp(exp->next_layer->next_neighbor->next_neighbor, _t1);
+            code.emplace_back(_code_1);
+
             struct ast *tmp_exp = exp->next_layer->next_layer;
             vector<string> ary_dim;
             int dim = 0;
@@ -190,15 +197,14 @@ code_node translate_exp(struct ast *exp, string place)
              exp->next_layer->next_neighbor->name == "MUL" ||
              exp->next_layer->next_neighbor->name == "DIV")
     {
+
         string _t1, _t2;
-        new_temp(_t1);
-        new_temp(_t2);
+        struct ast *exp1 = exp->next_layer;
+        struct ast *exp2 = exp->next_layer->next_neighbor->next_neighbor;
 
-        code_node _code_1 = translate_exp(exp->next_layer, _t1);
-        code.emplace_back(_code_1);
+        exp_opt(exp1, _t1);
+        exp_opt(exp2, _t2);
 
-        code_node _code_2 = translate_exp(exp->next_layer->next_neighbor->next_neighbor, _t2);
-        code.emplace_back(_code_2);
         string op;
         if (exp->next_layer->next_neighbor->name == "PLUS")
         {
@@ -225,10 +231,10 @@ code_node translate_exp(struct ast *exp, string place)
     }
     else if (exp->next_layer->name == "MINUS")
     {
+
         string _t1;
-        new_temp(_t1);
-        code_node _code_1 = translate_exp(exp->next_layer->next_neighbor, _t1);
-        code.emplace_back(_code_1);
+        struct ast *_exp2 = exp->next_layer->next_neighbor;
+        exp_opt(_exp2, _t1);
         res.code_list.emplace_back(place);
         res.code_list.emplace_back(":=");
         res.code_list.emplace_back("#0");
@@ -285,6 +291,10 @@ code_node translate_exp(struct ast *exp, string place)
             }
             else
             {
+                if (place.size() == 0)
+                {
+                    new_temp(place);
+                }
                 res.code_list.emplace_back(place);
                 res.code_list.emplace_back(":=");
                 res.code_list.emplace_back("CALL");
@@ -311,7 +321,10 @@ code_node translate_exp(struct ast *exp, string place)
                     _code.code_list.emplace_back(arg_list[i]);
                     code.emplace_back(_code);
                 }
-
+                if (place.size() == 0)
+                {
+                    new_temp(place);
+                }
                 res.code_list.emplace_back(place);
                 res.code_list.emplace_back(":=");
                 res.code_list.emplace_back("CALL");
@@ -337,14 +350,16 @@ code_node translate_stmt(struct ast *stmt)
         val_d *val = val_find(name);
         if (val)
         {
+            if (val->ir_name == "no_ir")
+            {
+                new_temp(val->ir_name);
+            }
             res = (translate_exp(stmt->next_layer, val->ir_name));
         }
         else
-        {
+        { //function
             res = (translate_exp(stmt->next_layer, ""));
         }
-
-        // cout << stmt->lineno << endl;
     }
     else if (stmt->next_layer->name == "CompSt")
     {
@@ -354,8 +369,7 @@ code_node translate_stmt(struct ast *stmt)
     else if (stmt->next_layer->name == "RETURN")
     {
         string _t1;
-        new_temp(_t1);
-        code.emplace_back(translate_exp(stmt->next_layer->next_neighbor, _t1));
+        exp_opt(stmt->next_layer->next_neighbor, _t1);
         res.code_list.emplace_back("RETURN");
         res.code_list.emplace_back(_t1);
     }
@@ -473,13 +487,8 @@ code_node translate_cond(struct ast *exp, string label_true, string label_false)
     {
 
         string _t1, _t2;
-        new_temp(_t1);
-        new_temp(_t2);
-        code_node _code_1 = translate_exp(exp->next_layer, _t1);
-        code.emplace_back(_code_1);
-
-        code_node _code_2 = translate_exp(exp->next_layer->next_neighbor->next_neighbor, _t2);
-        code.emplace_back(_code_2);
+        exp_opt(exp->next_layer, _t1);
+        exp_opt(exp->next_layer->next_neighbor->next_neighbor, _t2);
 
         code_node _true;
         _true.code_list.emplace_back("IF");
@@ -530,8 +539,7 @@ code_node translate_cond(struct ast *exp, string label_true, string label_false)
     else
     {
         string _t1;
-        new_label(_t1);
-        code.emplace_back(translate_exp(exp, _t1));
+        exp_opt(exp, _t1);
         code_node _label;
         _label.code_list.emplace_back("IF");
         _label.code_list.emplace_back(_t1);
@@ -549,10 +557,9 @@ code_node translate_cond(struct ast *exp, string label_true, string label_false)
 void translate_args(struct ast *args, vector<string> &arg_list)
 {
     string _t1;
-    new_temp(_t1);
-    code_node _code_1 = translate_exp(args->next_layer, _t1);
+    struct ast *exp = args->next_layer;
+    exp_opt(exp, _t1);
     arg_list.emplace_back(_t1); //tail
-    code.emplace_back(_code_1);
     if (args->next_layer->next_neighbor != NULL)
     {
         translate_args(args->next_layer->next_neighbor->next_neighbor, arg_list);
@@ -575,7 +582,7 @@ void function_init(struct ast *fun_dec)
             string _t;
             new_temp(_t);
             p.ir_name = _t;
-            // cout<<p.name<<", " + p.ir_name<<endl;
+            // cout<<p.name<<" == " + p.ir_name<<endl;
             val_d *_tmp = val_find(p.name);
             _tmp->ir_name = _t;
             code_node _code;
@@ -597,8 +604,8 @@ void function_def_list(struct ast *def_list)
         while (dec != NULL && dec->name.size() > 0)
         { //int a,b,c,d=10;
             struct ast *var_dec = dec->next_layer;
-            if (var_dec->next_neighbor == NULL)
-            { //int a
+            if (var_dec->next_neighbor == NULL && var_dec->next_layer->name == "VarDec")
+            { //int a[][]
                 string name;
                 new_temp(name);
                 code_node _code;
@@ -610,7 +617,7 @@ void function_def_list(struct ast *def_list)
                 val_d *val = val_find(_name);
                 val->ir_name = name;
             }
-            else
+            else if (var_dec->next_neighbor != NULL)
             { //int a=0
                 string name;
                 new_temp(name);

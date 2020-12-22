@@ -1,5 +1,5 @@
-int main(int a, struct str s){
-    int a,b;
-    a = 10;
-    b = a*a+1;
+int main(int aaa, struct str s){
+    int a;
+    int b = 10;
+    a = 3*10+1*2*3*4*main(a,s)*1;
 }

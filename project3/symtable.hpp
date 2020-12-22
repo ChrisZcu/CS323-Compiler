@@ -9,7 +9,8 @@ typedef struct val_d
     string type;         //int,float,char,struct(the name itself)
     int dim = 0;         //ary used
     vector<int> dim_num; //ary used
-    int value;           //int used
+    bool is_func_args = false;
+    int value = 0;           //int used
 
     vector<val_d> struct_field; //struct field used
     string ir_name="no_ir";        //ir code used
