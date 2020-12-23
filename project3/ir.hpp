@@ -7,31 +7,6 @@
 #endif
 
 using namespace std;
-/* args_count=2:
- * 	GOTO x
- * 	RETURN x
- * 	ARG x
- * 	PARAM x
- * 	READ x
- * 	WRITE x
- * args_count=3:
- * 	LABEL x :
- * 	FUNCTION f :
- * 	x := y
- * 	x := &y
- * 	x := *y
- * 	*x := y
- * 	DEC x [size]
- * args_count=4:
- * 	x := CALL f
- * args_count=5:
- * 	x := y + z
- * 	x := y - z
- * 	x := y * z
- * 	x := y / z
- * args_count=6:
- * IF x [relop] y GOTO z
- */
 
 typedef struct code_node
 {
@@ -51,3 +26,6 @@ void function_stmt_list(struct ast *stmt_list);
 pair<bool, string> get_exp_number(struct ast *exp);
 void exp_opt(struct ast *exp, string &t);
 void array_handle(struct ast *exp, string &final_addr);
+int get_struct_size(val_d *_struct);
+int get_field_size(val_d val);
+void struct_handle(struct ast *exp, string &final_addr);

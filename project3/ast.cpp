@@ -170,7 +170,7 @@ void func_struct_insert(struct ast *ast)
             val.name = struct_name;
             //TODO field handle
             struct ast *def_list = struct_layer->next_neighbor->next_neighbor->next_neighbor;
-            local_variable_insert(def_list, val.struct_field);
+            struct_variable_insert(def_list, val.struct_field);
             symbol.val.emplace_back(val);
         }
     }
@@ -183,6 +183,34 @@ string get_specifier_type(struct ast *specifier)
 {
     return (specifier->next_layer->name == "TYPE") ? specifier->next_layer->value
                                                    : specifier->next_layer->next_layer->next_neighbor->value;
+}
+bool is_struct = false;
+void struct_variable_insert(struct ast *ast, vector<val_d> &val_vec)
+{
+    is_struct = true;
+    if (ast->next_layer == NULL)
+    { //struct for first line, hanle it before
+        return;
+    }
+    struct ast *def = ast->next_layer;
+    struct ast *specifier = def->next_layer;
+
+    if (specifier->next_layer->name == "TYPE")
+    { //variable
+        string type = specifier->next_layer->value;
+        dec_list_charge(type, specifier->next_neighbor, val_vec);
+    }
+    else
+    { //struct
+        string type = specifier->next_layer->next_layer->next_neighbor->value;
+        dec_list_charge(type, specifier->next_neighbor, val_vec);
+    }
+
+    if (def->next_neighbor != NULL)
+    {
+        struct_variable_insert(def->next_neighbor, val_vec);
+    }
+    // ast->next_layer = NULL;
 }
 
 void local_variable_insert(struct ast *ast, vector<val_d> &val_vec)
@@ -317,6 +345,11 @@ void gen_symbol_table(struct ast *ast, int level)
         }
 
         struct ast *son = ast->next_layer;
+        // if (is_struct)
+        // {
+        //     son = NULL;
+        //     is_struct = false;
+        // }
 
         while (son != NULL)
         {
@@ -427,8 +460,7 @@ bool exp_cut(struct ast *exp)
                         exp->next_layer->next_neighbor->next_neighbor->next_layer->value == "1" && exp->next_layer->next_neighbor->name == "DIV")
                     {
                         /* code */
-                        exp->next_layer=exp->next_layer->next_layer;
-                     
+                        exp->next_layer = exp->next_layer->next_layer;
                     }
                 }
 

@@ -40,6 +40,14 @@ void exp_opt(struct ast *exp, string &t)
                 t = "&" + t;
             }
         }
+        val_d *_struct = val_find(val->type);
+        if (_struct->struct_field.size() > 0)
+        {
+            if (!val->is_func_args)
+            {
+                t = "&" + t;
+            }
+        }
     }
     else if (exp->next_layer->name == "INT")
     {
@@ -64,8 +72,6 @@ void array_handle(struct ast *exp, string &final_addr)
         dim++;
         string _t;
         exp_opt(tmp_exp->next_neighbor->next_neighbor, _t);
-        // new_temp(_t);
-        // code.emplace_back(translate_exp(tmp_exp->next_neighbor->next_neighbor, _t));
         ary_dim.emplace_back(_t);
         tmp_exp = tmp_exp->next_layer;
     }
@@ -166,6 +172,110 @@ void array_handle(struct ast *exp, string &final_addr)
     }
 }
 
+int get_struct_size(val_d *_struct)
+{
+    int size = 0;
+    for (auto val : _struct->struct_field)
+    {
+        size += get_field_size(val);
+    }
+    return size;
+}
+
+int get_field_size(val_d val)
+{
+    if (val.type != "int" &&
+        val.type != "float" &&
+        val.type != "char")
+    {
+        val_d *_struct_tmp = val_find(val.type);
+        return get_struct_size(_struct_tmp);
+    }
+    if (val.dim == 0 && val.struct_field.empty())
+    { //int
+        return 4;
+    }
+    else if (val.dim > 0 && val.struct_field.empty())
+    { //int a[][]
+        int size = 4;
+        for (auto dim : val.dim_num)
+        {
+            size *= dim;
+        }
+        return size;
+    }
+    else if (val.dim == 0 && val.struct_field.size() > 0)
+    { //struct
+        return get_struct_size(&val);
+    }
+    //TODO struct ary[][]
+    return 0;
+}
+
+void struct_handle(struct ast *exp, string &final_addr)
+{
+    if (exp->next_layer->name == "ID")
+    {
+        string name = exp->next_layer->value;
+        val_d *_val = val_find(name);
+        val_d *val = val_find(_val->type);
+        string off = _val->ir_name;
+        if (!_val->is_func_args)
+        {
+            off = "&" + off;
+        }
+        string field_name = exp->next_neighbor->next_neighbor->value;
+        int size = 0;
+        for (int i = 0; i < val->struct_field.size(); i++)
+        {
+            if (val->struct_field[i].name == field_name)
+            {
+                break;
+            }
+            size += get_field_size(val->struct_field[i]);
+        }
+        code_node _code;
+        _code.code_list.emplace_back(final_addr);
+        _code.code_list.emplace_back(":=");
+        _code.code_list.emplace_back(off);
+        if (size > 0)
+        {
+            _code.code_list.emplace_back("+");
+            _code.code_list.emplace_back("#" + to_string(size));
+        }
+        code.emplace_back(_code);
+    }
+    else
+    {
+        string _last_index;
+        new_temp(_last_index);
+        struct_handle(exp->next_layer, _last_index);
+        string name = exp->next_layer->next_neighbor->next_neighbor->value;
+        val_d *_val = val_find(name);
+        val_d *val = val_find(_val->type);
+        string field_name = exp->next_neighbor->next_neighbor->value;
+        int size = 0;
+        for (int i = 0; i < val->struct_field.size(); i++)
+        {
+            if (val->struct_field[i].name == field_name)
+            {
+                break;
+            }
+            size += get_field_size(val->struct_field[i]);
+        }
+        code_node _code;
+        _code.code_list.emplace_back(final_addr);
+        _code.code_list.emplace_back(":=");
+        _code.code_list.emplace_back(_last_index);
+        if (size > 0)
+        {
+            _code.code_list.emplace_back("+");
+            _code.code_list.emplace_back("#" + to_string(size));
+        }
+        code.emplace_back(_code);
+    }
+}
+
 code_node translate_exp(struct ast *exp, string place)
 {
 
@@ -188,6 +298,10 @@ code_node translate_exp(struct ast *exp, string place)
         res.code_list.emplace_back(":=");
         res.code_list.emplace_back(val->ir_name);
     }
+    else if (exp->next_layer->next_neighbor == NULL)
+    {
+        return res;
+    }
     else if (exp->next_layer->next_neighbor->name == "ASSIGN") //局部变量调用才有，传入place为irname
     {
         if (exp->next_layer->next_layer->name == "ID")
@@ -196,14 +310,19 @@ code_node translate_exp(struct ast *exp, string place)
         }
         else if (exp->next_layer->next_layer->next_neighbor->name == "DOT")
         { //a.s=
+            string _t1;
+            exp_opt(exp->next_layer->next_neighbor->next_neighbor, _t1);
+            string final_addr;
+            new_temp(final_addr);
+            struct_handle(exp->next_layer->next_layer, final_addr);
+            res.code_list.emplace_back("*" + final_addr);
+            res.code_list.emplace_back(":=");
+            res.code_list.emplace_back(_t1);
         }
         else
         { //array, a[1][2][3] = ...
             string _t1;
             exp_opt(exp->next_layer->next_neighbor->next_neighbor, _t1);
-            // new_temp(_t1);
-            // code_node _code_1 = translate_exp(exp->next_layer->next_neighbor->next_neighbor, _t1);
-            // code.emplace_back(_code_1);
             string final_addr;
             array_handle(exp->next_layer, final_addr);
             res.code_list.emplace_back("*" + final_addr);
@@ -354,6 +473,15 @@ code_node translate_exp(struct ast *exp, string place)
         /* code */
         string final_addr;
         array_handle(exp, final_addr);
+        res.code_list.emplace_back(place);
+        res.code_list.emplace_back(":=");
+        res.code_list.emplace_back("*" + final_addr);
+    }
+    else if (exp->next_layer->next_neighbor->name == "DOT")
+    { //struct
+        string final_addr;
+        new_temp(final_addr);
+        struct_handle(exp->next_layer, final_addr);
         res.code_list.emplace_back(place);
         res.code_list.emplace_back(":=");
         res.code_list.emplace_back("*" + final_addr);
@@ -630,6 +758,7 @@ void function_def_list(struct ast *def_list)
         while (dec != NULL && dec->name.size() > 0)
         { //int a,b,c,d=10;
             struct ast *var_dec = dec->next_layer;
+
             if (var_dec->next_neighbor == NULL && var_dec->next_layer->name == "VarDec")
             { //int a[][]
                 string name;
@@ -649,6 +778,25 @@ void function_def_list(struct ast *def_list)
                 code.emplace_back(_code);
 
                 val->ir_name = name;
+            }
+            else if (var_dec->next_neighbor == NULL)
+            {
+                string name = var_dec->next_layer->value;
+                val_d *val = val_find(name);
+                if (val->type != "int" &&
+                    val->type != "float" &&
+                    val->type != "char")
+                { //struct
+                    val_d *_struct = val_find(val->type);
+                    code_node _code;
+                    string _t;
+                    new_temp(_t);
+                    _code.code_list.emplace_back("DEC");
+                    _code.code_list.emplace_back(_t);
+                    _code.code_list.emplace_back(to_string(get_struct_size(_struct)));
+                    code.emplace_back(_code);
+                    val->ir_name = _t;
+                }
             }
             else if (var_dec->next_neighbor != NULL)
             { //int a=0

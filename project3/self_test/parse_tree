@@ -1,20 +1,16 @@
-int Swap(int a[2], int l, int h)
-{
-    
-    int temp;
-    write(a[l]);
-    write(a[h]);
-    temp = a[l];
-    a[l] = a[h];
-    a[h] = temp;
-    return 0;
-}
+struct str{
+    int a = 1;
+    int b;
+    int c;
+    struct str2 ss;
+};
+struct str2{
+    int cc;
+    int dd; 
+};
 int main(){
-    int ary[2];
-    ary[0]=1;
-    ary[1]=2;
-    Swap(ary,0,1);
-    write(ary[0]);
-    write(ary[1]);
+    struct str s;
+    s.a=1;
+    s.ss.cc = 1;
     return 0;
 }

@@ -33,3 +33,4 @@ void dec_charge(string type, struct ast *ast, vector<val_d> &val_vec);
 int var_dec_charge(string type, struct ast *ast, vector<val_d> &val_vec);
 void func_args(struct ast *var_list, vector<val_d> &args);
 val_d get_val(string type, struct ast *ast);
+void struct_variable_insert(struct ast *ast, vector<val_d> &val_vec);
