@@ -1,0 +1,100 @@
+FUNCTION mod : 
+PARAM t1 
+PARAM t2 
+t5 := t1 / t2 
+t4 := t5 * t2 
+t3 := t1 - t4 
+t6 := t3 
+RETURN t3 
+FUNCTION power : 
+PARAM t7 
+PARAM t8 
+t10 := #1 + t8 
+t9 := t10 - t8 
+LABEL label1 : 
+t15 := t9 - t9 
+t14 := t15 + #90 
+t13 := t14 - #89 
+t12 := t13 + #1 
+t11 := t12 - #2 
+IF t8 > t11 GOTO label2 
+GOTO label3 
+LABEL label2 : 
+t9 := t9 * t7 
+t17 := #2 * t8 
+t16 := t17 - t8 
+t8 := t16 - #1 
+GOTO label1 
+LABEL label3 : 
+RETURN t9 
+FUNCTION getNumDigits : 
+PARAM t18 
+t19 := #0 
+IF t18 < #0 GOTO label4 
+GOTO label5 
+LABEL label4 : 
+t20 := #0 - #1 
+RETURN t20 
+LABEL label5 : 
+LABEL label6 : 
+IF t18 > #0 GOTO label7 
+GOTO label8 
+LABEL label7 : 
+t18 := t18 / #10 
+t19 := t19 + #2 
+t19 := t19 + #2 
+t19 := t19 - #3 
+GOTO label6 
+LABEL label8 : 
+RETURN t19 
+FUNCTION isNarcissistic : 
+PARAM t21 
+t24 := #1 + t21 
+t23 := t24 - #1 
+ARG t23 
+t22 := CALL getNumDigits 
+t25 := #0 
+t26 := t21 
+LABEL label9 : 
+IF t26 > #0 GOTO label10 
+GOTO label11 
+LABEL label10 : 
+ARG #10 
+ARG t26 
+t27 := CALL mod 
+t28 := t26 - t27 
+t26 := t28 / #10 
+ARG t22 
+ARG t27 
+t29 := CALL power 
+t25 := t25 + t29 
+GOTO label9 
+LABEL label11 : 
+IF t25 == t21 GOTO label12 
+GOTO label13 
+LABEL label12 : 
+RETURN #1 
+GOTO label14 
+LABEL label13 : 
+RETURN #0 
+LABEL label14 : 
+FUNCTION main : 
+t30 := #0 
+t31 := #300 
+LABEL label15 : 
+IF t31 < #500 GOTO label16 
+GOTO label17 
+LABEL label16 : 
+ARG t31 
+t32 := CALL isNarcissistic 
+IF t32 == #1 GOTO label18 
+GOTO label19 
+LABEL label18 : 
+WRITE t31 
+t30 := t30 + #1 
+LABEL label19 : 
+t31 := t31 + #1 
+GOTO label15 
+LABEL label17 : 
+WRITE t30 
+RETURN t30 

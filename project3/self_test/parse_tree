@@ -2,6 +2,7 @@ struct str{
     int a = 1;
     int b;
     int c;
+    struct str2 str_ary[3][2];
     struct str2 ss;
 };
 struct str2{
@@ -9,8 +10,9 @@ struct str2{
     int dd; 
 };
 int main(){
-    struct str s;
-    s.a=1;
-    s.ss.cc = 1;
+    struct str ary[5][3];
+    struct str str1;
+    str1.str_ary[2][1].c= 1;
+    ary[0][3].b=1;
     return 0;
 }

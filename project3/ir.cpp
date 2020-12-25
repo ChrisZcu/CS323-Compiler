@@ -1,5 +1,6 @@
 #include <iostream>
 #include <stdlib.h>
+#include <iostream>
 
 #ifndef IRH
 #define IRH
@@ -40,8 +41,9 @@ void exp_opt(struct ast *exp, string &t)
                 t = "&" + t;
             }
         }
+
         val_d *_struct = val_find(val->type);
-        if (_struct->struct_field.size() > 0)
+        if (_struct && _struct->struct_field.size() > 0)
         {
             if (!val->is_func_args)
             {
@@ -67,7 +69,7 @@ void array_handle(struct ast *exp, string &final_addr)
     struct ast *tmp_exp = exp->next_layer;
     vector<string> ary_dim;
     int dim = 0;
-    while (tmp_exp->name != "ID")
+    while (tmp_exp->name != "ID" && tmp_exp->next_neighbor->name == "LB")
     {
         dim++;
         string _t;
@@ -75,16 +77,38 @@ void array_handle(struct ast *exp, string &final_addr)
         ary_dim.emplace_back(_t);
         tmp_exp = tmp_exp->next_layer;
     }
-
-    string ary_name = tmp_exp->value;
-    val_d *ary_val = val_find(ary_name);
-    tmp_exp = exp->next_layer->next_layer;
-    string off = ary_val->ir_name;
-    if (!ary_val->is_func_args)
+    val_d *ary_val;
+    string ary_name;
+    string off;
+    if (tmp_exp->next_neighbor != NULL && tmp_exp->next_neighbor->name == "DOT")
     {
-        off = "&" + off;
+        string _tmp;
+        new_temp(_tmp);
+        struct_handle(tmp_exp, _tmp);
+        ary_name = tmp_exp->next_neighbor->next_neighbor->value;
+        ary_val = val_find(ary_name);
+        off = _tmp;
+    }
+    else
+    {
+        ary_name = tmp_exp->value;
+        ary_val = val_find(ary_name);
+        off = ary_val->ir_name;
+        if (!ary_val->is_func_args)
+        {
+            off = "&" + off;
+        }
     }
 
+    int item_size = 4;
+    if (ary_val->type != "int" &&
+        ary_val->type != "float" &&
+        ary_val->type != "char")
+    {
+
+        val_d *struct_tmp = val_find(ary_val->type);
+        item_size = get_struct_size(struct_tmp);
+    }
     if (ary_dim.size() == ary_val->dim_num.size())
     { //full
         for (int i = 0; i < ary_dim.size() - 1; i++)
@@ -95,7 +119,8 @@ void array_handle(struct ast *exp, string &final_addr)
             {
                 mul_dim *= ary_val->dim_num[j];
             }
-            mul_dim *= 4;
+
+            mul_dim *= item_size;
             string _t;
             new_temp(_t);
             code_node _code;
@@ -124,7 +149,7 @@ void array_handle(struct ast *exp, string &final_addr)
         _code_4.code_list.emplace_back(":=");
         _code_4.code_list.emplace_back(ary_dim[0]);
         _code_4.code_list.emplace_back("*");
-        _code_4.code_list.emplace_back("#4");
+        _code_4.code_list.emplace_back("#" + to_string(item_size));
         code.emplace_back(_code_4);
 
         new_temp(final_addr);
@@ -146,7 +171,7 @@ void array_handle(struct ast *exp, string &final_addr)
             {
                 mul_dim *= ary_val->dim_num[j];
             }
-            mul_dim *= 4;
+            mul_dim *= item_size;
             string _t;
             new_temp(_t);
             code_node _code;
@@ -245,6 +270,50 @@ void struct_handle(struct ast *exp, string &final_addr)
         }
         code.emplace_back(_code);
     }
+    else if (exp->next_layer->next_neighbor->name == "LB")
+    { //struct ary
+        string _last_index;
+        new_temp(_last_index);
+        array_handle(exp, _last_index);
+        struct ast *tmp_exp = exp;
+        while (tmp_exp->next_layer->name != "ID")
+        {
+            tmp_exp = tmp_exp->next_layer;
+        }
+
+        string struct_val_name;
+        if (tmp_exp->next_neighbor->name == "LB")
+        {
+            struct_val_name = tmp_exp->next_layer->value;
+        }
+        else
+        {
+            struct_val_name = tmp_exp->next_neighbor->next_neighbor->value;
+        }
+
+        val_d *val = val_find(val_find(struct_val_name)->type);
+        string field_name = exp->next_neighbor->next_neighbor->value;
+        int size = 0;
+        for (int i = 0; i < val->struct_field.size(); i++)
+        {
+            if (val->struct_field[i].name == field_name)
+            {
+                break;
+            }
+            size += get_field_size(val->struct_field[i]);
+        }
+        code_node _code;
+        _code.code_list.emplace_back(final_addr);
+        _code.code_list.emplace_back(":=");
+        _code.code_list.emplace_back(_last_index);
+        if (size > 0)
+        {
+            _code.code_list.emplace_back("+");
+            _code.code_list.emplace_back("#" + to_string(size));
+        }
+        code.emplace_back(_code);
+        return;
+    }
     else
     {
         string _last_index;
@@ -275,10 +344,63 @@ void struct_handle(struct ast *exp, string &final_addr)
         code.emplace_back(_code);
     }
 }
+void parsetree2(struct ast *ast, int level)
+{
+    if (ast != NULL)
+    {
+        if (ast->name.size() > 0)
+        {
+            for (int i = 0; i < level; i++)
+            {
+                cout << " ";
+            }
+            if (ast->lineno != -1)
+            {
+                cout << ast->name;
+            }
+            if (ast->name == "TYPE" ||
+                (ast->name == "ID") ||
+                (ast->name == "INT") ||
+                (ast->name == "FLOAT") ||
+                (ast->name == "CHAR"))
+            {
+                cout << ": " + ast->value;
+            }
+            if ((ast->name == "Program") ||
+                (ast->name == "Specifier") ||
+                (ast->name == "ExtDef") ||
+                (ast->name == "Dec") ||
+                (ast->name == "StmtList") ||
+                (ast->name == "ExtDecList") ||
+                (ast->name == "StructSpecifier") ||
+                (ast->name == "VarDec") ||
+                (ast->name == "FunDec") ||
+                (ast->name == "Exp") ||
+                (ast->name == "VarList") ||
+                (ast->name == "ParamDec") ||
+                (ast->name == "CompSt") ||
+                (ast->name == "ExtDefList") ||
+                (ast->name == "Stmt") ||
+                (ast->name == "DefList") ||
+                (ast->name == "Def") ||
+                (ast->name == "DecList") ||
+                (ast->name == "Args"))
+            {
+                cout << " (" << ast->lineno << ")";
+            }
+            cout << endl;
+        }
+        struct ast *son = ast->next_layer;
+        while (son != NULL)
+        {
+            parsetree2(son, level + 1);
+            son = son->next_neighbor;
+        }
+    }
+}
 
 code_node translate_exp(struct ast *exp, string place)
 {
-
     if (exp->next_layer->name == "LP")
     {
         return translate_exp(exp->next_layer->next_neighbor, place);
@@ -310,6 +432,7 @@ code_node translate_exp(struct ast *exp, string place)
         }
         else if (exp->next_layer->next_layer->next_neighbor->name == "DOT")
         { //a.s=
+            // cout << exp->next_layer->next_layer->next_neighbor->next_neighbor->value << endl;
             string _t1;
             exp_opt(exp->next_layer->next_neighbor->next_neighbor, _t1);
             string final_addr;
@@ -766,6 +889,13 @@ void function_def_list(struct ast *def_list)
                 string _name = get_var_dec_name(var_dec);
                 val_d *val = val_find(_name);
                 int size = 4;
+                if (val->type != "int" &&
+                    val->type != "float" &&
+                    val->type != "char")
+                { //struct ary
+                    val_d *struct_tmp = val_find(val->type);
+                    size = get_struct_size(struct_tmp);
+                }
                 for (int i = 0; i < val->dim; i++)
                 {
                     size *= val->dim_num[i];
@@ -827,7 +957,6 @@ void function_stmt_list(struct ast *stmt_list)
     struct ast *stmt = stmt_list->next_layer;
     while (stmt != NULL && stmt->name.size() > 0)
     {
-
         if (stmt->next_layer->name != "CompSt")
         {
             code.emplace_back(translate_stmt(stmt));
@@ -845,10 +974,8 @@ void function_handle(struct ast *fun_dec)
 
     function_init(fun_dec);
     struct ast *comp_st = fun_dec->next_neighbor;
-
     struct ast *def_list = comp_st->next_layer->next_neighbor; // int a;int a=1;
     function_def_list(def_list);
-
     struct ast *stmt_list = def_list->next_neighbor;
     function_stmt_list(stmt_list);
 }
