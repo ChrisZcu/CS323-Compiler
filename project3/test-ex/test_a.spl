@@ -1,0 +1,17 @@
+struct str{
+    int a = 1;
+    int b;
+    int c;
+    struct str2 str_ary[3][2];
+    struct str2 ss;
+};
+struct str2{
+    int cc;
+    int dd; 
+};
+int main(){
+    struct str str1;
+    str1.str_ary[2][1].cc= 1;
+    write(str1.str_ary[2][1].cc);
+    return 0;
+}

@@ -1,100 +1,121 @@
-FUNCTION mod : 
+FUNCTION Swap : 
 PARAM t1 
 PARAM t2 
-t5 := t1 / t2 
-t4 := t5 * t2 
-t3 := t1 - t4 
-t6 := t3 
-RETURN t3 
-FUNCTION power : 
-PARAM t7 
-PARAM t8 
-t10 := #1 + t8 
-t9 := t10 - t8 
+PARAM t3 
+t5 := t2 * #4 
+t6 := t1 + t5 
+t4 := *t6 
+t8 := t3 * #4 
+t9 := t1 + t8 
+t7 := *t9 
+t10 := t2 * #4 
+t11 := t1 + t10 
+*t11 := t7 
+t12 := t3 * #4 
+t13 := t1 + t12 
+*t13 := t4 
+RETURN #0 
+FUNCTION Partition : 
+PARAM t14 
+PARAM t15 
+PARAM t16 
+t18 := t15 * #4 
+t19 := t14 + t18 
+t17 := *t19 
 LABEL label1 : 
-t15 := t9 - t9 
-t14 := t15 + #90 
-t13 := t14 - #89 
-t12 := t13 + #1 
-t11 := t12 - #2 
-IF t8 > t11 GOTO label2 
+IF t15 < t16 GOTO label2 
 GOTO label3 
 LABEL label2 : 
-t9 := t9 * t7 
-t17 := #2 * t8 
-t16 := t17 - t8 
-t8 := t16 - #1 
+LABEL label4 : 
+IF t15 < t16 GOTO label7 
+GOTO label6 
+LABEL label7 : 
+t21 := t16 * #4 
+t22 := t14 + t21 
+t20 := *t22 
+IF t20 >= t17 GOTO label5 
+GOTO label6 
+LABEL label5 : 
+t16 := t16 - #1 
+GOTO label4 
+LABEL label6 : 
+ARG t16 
+ARG t15 
+ARG t14 
+t23 := CALL Swap 
+LABEL label8 : 
+IF t15 < t16 GOTO label11 
+GOTO label10 
+LABEL label11 : 
+t25 := t15 * #4 
+t26 := t14 + t25 
+t24 := *t26 
+IF t24 <= t17 GOTO label9 
+GOTO label10 
+LABEL label9 : 
+t15 := t15 + #1 
+GOTO label8 
+LABEL label10 : 
+ARG t16 
+ARG t15 
+ARG t14 
+t27 := CALL Swap 
 GOTO label1 
 LABEL label3 : 
-RETURN t9 
-FUNCTION getNumDigits : 
-PARAM t18 
-t19 := #0 
-IF t18 < #0 GOTO label4 
-GOTO label5 
-LABEL label4 : 
-t20 := #0 - #1 
-RETURN t20 
-LABEL label5 : 
-LABEL label6 : 
-IF t18 > #0 GOTO label7 
-GOTO label8 
-LABEL label7 : 
-t18 := t18 / #10 
-t19 := t19 + #2 
-t19 := t19 + #2 
-t19 := t19 - #3 
-GOTO label6 
-LABEL label8 : 
-RETURN t19 
-FUNCTION isNarcissistic : 
-PARAM t21 
-t24 := #1 + t21 
-t23 := t24 - #1 
-ARG t23 
-t22 := CALL getNumDigits 
-t25 := #0 
-t26 := t21 
-LABEL label9 : 
-IF t26 > #0 GOTO label10 
-GOTO label11 
-LABEL label10 : 
-ARG #10 
-ARG t26 
-t27 := CALL mod 
-t28 := t26 - t27 
-t26 := t28 / #10 
-ARG t22 
-ARG t27 
-t29 := CALL power 
-t25 := t25 + t29 
-GOTO label9 
-LABEL label11 : 
-IF t25 == t21 GOTO label12 
+RETURN t15 
+FUNCTION QuickSort : 
+PARAM t28 
+PARAM t29 
+PARAM t30 
+IF t29 < t30 GOTO label12 
 GOTO label13 
 LABEL label12 : 
-RETURN #1 
-GOTO label14 
+ARG t30 
+ARG t29 
+ARG t28 
+t31 := CALL Partition 
+t32 := t31 - #1 
+ARG t32 
+ARG t29 
+ARG t28 
+t33 := CALL QuickSort 
+t34 := t31 + #1 
+ARG t30 
+ARG t34 
+ARG t28 
+t35 := CALL QuickSort 
 LABEL label13 : 
 RETURN #0 
-LABEL label14 : 
 FUNCTION main : 
-t30 := #0 
-t31 := #300 
+t36 := #8 
+DEC t37 32 
+t38 := #0 
+LABEL label14 : 
+IF t38 < t36 GOTO label15 
+GOTO label16 
 LABEL label15 : 
-IF t31 < #500 GOTO label16 
-GOTO label17 
+READ t39 
+t40 := t38 * #4 
+t41 := &t37 + t40 
+*t41 := t39 
+t38 := t38 + #1 
+GOTO label14 
 LABEL label16 : 
-ARG t31 
-t32 := CALL isNarcissistic 
-IF t32 == #1 GOTO label18 
+t42 := t36 - #1 
+ARG t42 
+ARG #0 
+ARG &t37 
+t43 := CALL QuickSort 
+t38 := #0 
+LABEL label17 : 
+IF t38 < t36 GOTO label18 
 GOTO label19 
 LABEL label18 : 
-WRITE t31 
-t30 := t30 + #1 
+t45 := t38 * #4 
+t46 := &t37 + t45 
+t44 := *t46 
+WRITE t44 
+t38 := t38 + #1 
+GOTO label17 
 LABEL label19 : 
-t31 := t31 + #1 
-GOTO label15 
-LABEL label17 : 
-WRITE t30 
-RETURN t30 
+RETURN #0 

@@ -128,7 +128,7 @@ void array_handle(struct ast *exp, string &final_addr)
             _code.code_list.emplace_back(":=");
             _code.code_list.emplace_back(index_ir);
             _code.code_list.emplace_back("*");
-            _code.code_list.emplace_back(to_string(mul_dim));
+            _code.code_list.emplace_back("#" + to_string(mul_dim));
             code.emplace_back(_code);
 
             string _tmp_addr;
@@ -179,7 +179,7 @@ void array_handle(struct ast *exp, string &final_addr)
             _code.code_list.emplace_back(":=");
             _code.code_list.emplace_back(index_ir);
             _code.code_list.emplace_back("*");
-            _code.code_list.emplace_back(to_string(mul_dim));
+            _code.code_list.emplace_back("#" + to_string(mul_dim));
             code.emplace_back(_code);
 
             string _tmp_addr;
@@ -214,6 +214,17 @@ int get_field_size(val_d val)
         val.type != "char")
     {
         val_d *_struct_tmp = val_find(val.type);
+        if (val.dim > 0)
+        {
+            int tmp = 1;
+            for (auto tmp_dim : val.dim_num)
+            {
+                tmp *= tmp_dim;
+            }
+
+            return tmp * get_struct_size(_struct_tmp);
+        }
+
         return get_struct_size(_struct_tmp);
     }
     if (val.dim == 0 && val.struct_field.empty())
@@ -233,6 +244,7 @@ int get_field_size(val_d val)
     { //struct
         return get_struct_size(&val);
     }
+
     //TODO struct ary[][]
     return 0;
 }
@@ -432,7 +444,6 @@ code_node translate_exp(struct ast *exp, string place)
         }
         else if (exp->next_layer->next_layer->next_neighbor->name == "DOT")
         { //a.s=
-            // cout << exp->next_layer->next_layer->next_neighbor->next_neighbor->value << endl;
             string _t1;
             exp_opt(exp->next_layer->next_neighbor->next_neighbor, _t1);
             string final_addr;
@@ -859,7 +870,6 @@ void function_init(struct ast *fun_dec)
             string _t;
             new_temp(_t);
             p.ir_name = _t;
-            // cout<<p.name<<" == " + p.ir_name<<endl;
             val_d *_tmp = val_find(p.name);
             _tmp->ir_name = _t;
             code_node _code;
@@ -1005,11 +1015,3 @@ void ir_translate(struct ast *ast)
         }
     }
 }
-
-// int main()
-// {
-//     string name;
-//     new_label(name);
-//     cout << name << endl;
-//     return 0;
-// }
